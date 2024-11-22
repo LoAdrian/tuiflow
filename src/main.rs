@@ -8,47 +8,55 @@ use regex::Regex;
 mod model;
 
 fn main() {
-
 }
 
-fn draw(frame: &mut Frame) {
-    let text = Paragraph::new("Hello, world!");
-    frame.render_widget(text, frame.area());
+struct W {
+    s: Box<dyn T>
 }
 
-enum FLowState {
-    List(ListState),
-    Raw(RawState)
+/* 
+impl W {
+    fn new(s: impl T) -> W{
+        //This does not work, the compiler looses information about the (implicit) lifetime of s
+        //because it is dynamic; s could contain something that might not life as long as W
+        W {s: Box::new(s) }
+    }
 }
 
-struct ListState {
-    delimiter: String,
-    line_filter: String,
-    line_display: String,
-    transitions: Vec<Transition>
+struct W2<V: T> {
+    s: V
 }
 
-struct RawState {
-    filter: String,
-    display: String,
-    transitions: Vec<Transition>
+impl<V: T> W2<V> {
+    //this works because event tough we store something behind a trait it will be expanded at compile time including lifetimes
+    fn new(s: V) -> W2<V>{
+        W2 { s }
+    }
+}
+*/
+
+struct S<'a> {
+    x: &'a i32
 }
 
-struct Transition {
-    control: Control,
-    next_state: FLowState,
-    filter: String, // regex extraction from selection
-    command: String, //command to execute
+trait T {
+    fn get(&self) -> i32;
 }
 
-struct Control {
-    name: String,
-    key: char // probably should not be char
+impl<'a> T for S<'a> {
+    fn get(&self) -> i32 {
+        *self.x
+    }
 }
 
-struct Flow {
-    // Initial State with initial transition leading to the state, or maybe just an initial command?
-    // Basic settings
-    // Factory method to create the flow
-    // Maybe / Probably a title
+fn F(s: S) {
+    print!("{}", s.x);
+}
+
+fn F2(s: impl T) {
+    print!("{}", s.get());
+}
+
+fn F3(s: impl T + 'static) {
+    print!("{}", s.get());
 }

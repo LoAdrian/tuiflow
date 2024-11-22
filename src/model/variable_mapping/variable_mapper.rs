@@ -2,7 +2,7 @@ use regex::Regex;
 
 use super::{VariableMapperCompilationError, VariableMappingError};
 
-pub struct VariableMapper {
+pub(crate) struct VariableMapper {
     input_filter: Regex,
     output_format: String,
 }

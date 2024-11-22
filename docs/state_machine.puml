@@ -1,0 +1,35 @@
+class State {
+	+ delimiter: char
+}
+class Transition
+
+interface StateContext {
+	update(current_state: State, current_display: Display) : void
+}
+
+interface Terminal {
+	get_current_display(): Display
+    input_controls(c: char)
+}
+note top: Terminal is a trait that's implemented not by the model-module itself\nbut by something that orchestrates communication\nbetween the ui and the model
+class Workflow {
+	
+}
+
+class StringMapper {
+	+ input: Regex
+    + output: Pattern
+}
+class Display
+class Line {
+	+ content: String
+}
+Display o- Line
+Workflow "1"-d-"1" Display : has current >
+State "1" -d-> "1..n" Transition : has >
+State "1" -r- "1" StringMapper : < maps command output to display
+Transition "1" -r- "1" StringMapper : < maps display selection to command
+StateContext "1" -r- "1" State : < is currently active in
+Workflow -u-|> Terminal
+Workflow -u-|> StateContext
+Terminal -[hidden]r- StateContext

@@ -1,8 +1,8 @@
 mod variable_mapper;
 mod error;
 
-pub use variable_mapper::VariableMapper;
-pub use error::{VariableMapperCompilationError, VariableMappingError};
+pub(crate) use variable_mapper::VariableMapper;
+pub(crate) use error::{VariableMapperCompilationError, VariableMappingError};
 
 #[cfg(test)]
 mod variable_mapper_tests {

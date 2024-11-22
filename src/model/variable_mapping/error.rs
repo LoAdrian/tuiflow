@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
-pub struct VariableMapperCompilationError;
+pub(crate) struct VariableMapperCompilationError;
 impl Display for VariableMapperCompilationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Input filter regex compilation failed. Make sure that it complies with: https://docs.rs/regex/latest/regex/#syntax")
@@ -9,7 +9,7 @@ impl Display for VariableMapperCompilationError {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum VariableMappingError {
+pub(crate) enum VariableMappingError {
     InputParsingFailed,
     VariableMappingFailed
 }
