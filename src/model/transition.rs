@@ -2,25 +2,25 @@ use std::rc::Rc;
 
 use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 
-use super::state::{State, StateContext};
+use super::{control::Control, state::{State, StateContext}};
 
 pub(crate) struct Transition<C: StateContext> {
     control: Control,
     next_state: Rc<State<C>>,
-    selected_display_to_cmd: VariableMapper, // regex extraction from selection
+    selected_display_to_command: VariableMapper, // regex extraction from selection
 }
 
-impl<C: StateContext> Transition<C> {
-    pub fn new(control: Control, next_state: &Rc<State<C>>, selected_display_to_cmd: VariableMapper) -> Self {
+impl<'a, C: StateContext> Transition<C> {
+    pub fn new(control: Control, next_state: Rc<State<C>>, selected_display_to_cmd: VariableMapper) -> Self {
         Self {
             control,
-            next_state: Rc::clone(next_state),
-            selected_display_to_cmd,
+            next_state,
+            selected_display_to_command: selected_display_to_cmd,
         }
     }
 
     pub fn get_transition_command(&self, display_selection: &str) -> Result<String, VariableMappingError> {
-        self.selected_display_to_cmd.map(display_selection)
+        self.selected_display_to_command.map(display_selection)
     }
     
     pub fn get_activation_control(&self) -> &Control {
@@ -32,7 +32,12 @@ impl<C: StateContext> Transition<C> {
     }
 }
 
-pub(crate) struct Control {
-    pub name: String,
-    pub key: char // probably should not be char
+impl<C: StateContext> Clone for Transition<C> {
+    fn clone(&self) -> Self {
+        Self {
+            control: self.control.clone(),
+            next_state: Rc::clone(&self.next_state),
+            selected_display_to_command: self.selected_display_to_command.clone(),
+        }
+    }
 }

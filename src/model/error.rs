@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
-use super::variable_mapping::VariableMappingError;
+use super::{control::Control, variable_mapping::VariableMappingError};
 
 pub enum StateTransitionError  {
     SelectionToCommandMappingFailed(VariableMappingError),
-    ControlNotFound(char),
+    ControlNotFound(Control),
     CliCommandExecutionFailed(String)
 }
 

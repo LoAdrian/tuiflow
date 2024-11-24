@@ -6,6 +6,7 @@ use ratatui::{text::Text, widgets::Paragraph, Frame};
 use regex::Regex;
 
 mod model;
+mod builders;
 
 fn main() {
 }
