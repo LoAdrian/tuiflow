@@ -8,17 +8,12 @@ impl Display for VariableMapperCompilationError {
     }
 }
 
+// TODO: Add more info to error
 #[derive(Debug, PartialEq)]
-pub(crate) enum VariableMappingError {
-    InputParsingFailed,
-    VariableMappingFailed
-}
+pub(crate) struct VariableMappingError;
 
 impl Display for VariableMappingError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            VariableMappingError::InputParsingFailed => write!(f, "Could not parse input with input filter regex"),
-            VariableMappingError::VariableMappingFailed => write!(f, "Could not map input variables to output. Make sure that all expected variables are present in the input.")
-        }
+            write!(f, "Could not map input variables to output. Make sure that all expected variables are present in the input.")
     }
 }

@@ -1,7 +1,7 @@
 #[derive(Clone)]
 pub struct Display {
     pub lines: Vec<Line>,
-    pub error: Option<String>,
+    pub errors: Vec<String>,
     pub info: Option<String>
 }
 
@@ -9,7 +9,7 @@ impl Default for Display {
     fn default() -> Self {
         Self { 
             lines: Default::default(), 
-            error: Default::default(),
+            errors: Default::default(),
             info: Default::default() 
         }
     }

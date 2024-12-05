@@ -21,7 +21,7 @@ impl<R: CommandRunner> Workflow<R> {
         }
     }
     
-    pub fn init(&mut self, initial_state: Rc<State<Self>>, initial_command: &str, initial_command_to_display: VariableMapper, line_delimiter: char) {
+    pub fn init(&mut self, initial_state: Rc<State<Self>>, initial_command: &str, initial_command_to_display: VariableMapper) {
 
     }
 
@@ -57,7 +57,7 @@ impl<R: CommandRunner> StateContext for Workflow<R> {
 impl<R: CommandRunner> Terminal for Workflow<R> {
     fn run_command(&mut self, display_selection: &str, control: Control) {
         if let Err(e) = self.get_current_state().transition(display_selection, control) {
-            self.get_current_display_mut().error = Some(String::from(format!("{e}")));
+            self.get_current_display_mut().errors.push(String::from(format!("{e}")));
         }
     }
 

@@ -20,7 +20,7 @@ impl<'a, C: StateContext> Transition<C> {
     }
 
     pub fn get_transition_command(&self, display_selection: &str) -> Result<String, VariableMappingError> {
-        self.selected_display_to_command.map(display_selection)
+        self.selected_display_to_command.map(display_selection).nth(0).unwrap()
     }
     
     pub fn get_activation_control(&self) -> &Control {

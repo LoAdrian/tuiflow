@@ -10,7 +10,6 @@ pub struct StateBuilder<C: StateContext> {
     command_output_to_display_mapper: Option<VariableMapper>,
     context: Option<Rc<RefCell<C>>>,
     transitions: Option<Vec<Transition<C>>>,
-    line_delimiter: Option<char>,
 }
 
 impl<C: StateContext> Default for StateBuilder<C> {
@@ -20,7 +19,7 @@ impl<C: StateContext> Default for StateBuilder<C> {
             command_output_to_display_mapper: Default::default(),
             context: Default::default(),
             transitions: Default::default(),
-            line_delimiter: Default::default() }
+        }
     }
 }
 
@@ -61,18 +60,12 @@ impl<C: StateContext> StateBuilder<C> {
         self.add_transition(transition)
     }
 
-    pub fn with_line_delimiter(&mut self, line_delimiter: char) -> &Self {
-        self.line_delimiter = Some(line_delimiter);
-        self
-    }
-
     pub fn build(self) -> State<C> { // Consume self. Force clone(). Implies that clone is called on underlying types.
         State::new(
             self.display_name.expect("Display name is required").as_str(), 
             self.command_output_to_display_mapper.expect("Command output to display mapper is required"),
             self.context.expect("Context is required"),
             self.transitions.expect("Transitions are required"),
-            self.line_delimiter.expect("Line delimiter is required")
         )
     }
 }

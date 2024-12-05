@@ -7,7 +7,6 @@ pub(crate) struct State<C: StateContext> {
     command_output_to_display: VariableMapper,
     transitions: HashMap<String, Transition<C>>,
     context: Rc<RefCell<C>>,
-    line_delimiter: char,
 }
 
 impl<C: StateContext> State<C> {
@@ -15,8 +14,7 @@ impl<C: StateContext> State<C> {
         display_name: &str, 
         command_output_to_display: VariableMapper,
         context: Rc<RefCell<C>>,
-        transitions: Vec<Transition<C>>,
-        line_delimiter: char) -> Self {
+        transitions: Vec<Transition<C>>) -> Self {
         let transition_mapping = transitions
             .into_iter()
             .map(|t: Transition<C>| (String::from(t.get_activation_control().get_key()), t))
@@ -27,7 +25,6 @@ impl<C: StateContext> State<C> {
             command_output_to_display,
             transitions: transition_mapping,
             context,
-            line_delimiter,
         }
     }
 
@@ -61,23 +58,17 @@ impl<C: StateContext> State<C> {
     
     fn parse_display(&self, command_output: &str) -> Display {
         let mut errors = Vec::new();
-        let lines = command_output
-            .split(self.line_delimiter)
-            .map(|line| {
-                let line_result = self.command_output_to_display.map(line);
-                if let Ok(display_line)  = line_result {
-                    return Some(Line(String::from(display_line)));
-                } else {
-                    let e = line_result.unwrap_err();
-                    errors.push(format!("{e}"));
-                    return None;
-                }
-            })
-            .filter(|line| line.is_some())
-            .map(|line| line.unwrap())
-            .collect::<Vec<Line>>();
+        let mut lines = Vec::new();
+        for line_result in self.command_output_to_display.map(command_output) {
+            match line_result {
+                Ok(line) => lines.push(Line(line)),
+                Err(e) => errors.push(format!("{e}"))
+            }
+        }
+
         Display {
             lines,
+            errors,
             ..Default::default()
         }
     }
