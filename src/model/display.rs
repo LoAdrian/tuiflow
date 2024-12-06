@@ -6,8 +6,8 @@ pub struct Display {
 
 impl Default for Display {
     fn default() -> Self {
-        Self { 
-            lines: Default::default(), 
+        Self {
+            lines: Default::default(),
             errors: Default::default(),
         }
     }

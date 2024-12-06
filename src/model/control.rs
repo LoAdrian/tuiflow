@@ -1,5 +1,4 @@
 #[derive(Clone)]
-
 #[derive(PartialEq, Debug)]
 pub struct Control {
     name: String,

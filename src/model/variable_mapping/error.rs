@@ -14,6 +14,6 @@ pub(crate) struct VariableMappingError;
 
 impl Display for VariableMappingError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "Could not map input variables to output. Make sure that all expected variables are present in the input.")
+        write!(f, "Could not map input variables to output. Make sure that all expected variables are present in the input.")
     }
 }

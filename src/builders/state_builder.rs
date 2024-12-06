@@ -1,10 +1,14 @@
-use std::{cell::RefCell, default, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
-use crate::model::{state::{State, StateContext}, transition::Transition, variable_mapping::{self, VariableMapper}};
+use crate::model::{
+    state::{State, StateContext},
+    transition::Transition,
+    variable_mapping::VariableMapper,
+};
 
 use super::TransitionBuilder;
 
-#[derive(Clone)] 
+#[derive(Clone)]
 pub struct StateBuilder<C: StateContext<M>, M: VariableMapper> {
     display_name: Option<String>,
     command_output_to_display_mapper: Option<M>,
@@ -14,7 +18,7 @@ pub struct StateBuilder<C: StateContext<M>, M: VariableMapper> {
 
 impl<C: StateContext<M>, M: VariableMapper> Default for StateBuilder<C, M> {
     fn default() -> Self {
-        Self { 
+        Self {
             display_name: Default::default(),
             command_output_to_display_mapper: Default::default(),
             context: Default::default(),
@@ -24,14 +28,19 @@ impl<C: StateContext<M>, M: VariableMapper> Default for StateBuilder<C, M> {
 }
 
 impl<C: StateContext<M>, M: VariableMapper> StateBuilder<C, M> {
-    pub fn new() -> Self { Default::default() }
+    pub fn new() -> Self {
+        Default::default()
+    }
 
     pub fn with_display_name(&mut self, display_name: String) -> &mut Self {
         self.display_name = Some(display_name);
         self
     }
 
-    pub fn with_command_output_to_display_mapper(&mut self, command_output_to_display_mapper: M) -> &mut Self {
+    pub fn with_command_output_to_display_mapper(
+        &mut self,
+        command_output_to_display_mapper: M,
+    ) -> &mut Self {
         self.command_output_to_display_mapper = Some(command_output_to_display_mapper);
         self
     }
@@ -51,15 +60,24 @@ impl<C: StateContext<M>, M: VariableMapper> StateBuilder<C, M> {
         self
     }
 
-    pub fn build_and_add_transition(&mut self, f: impl FnOnce(TransitionBuilder<C, M>) -> Transition<C, M>) -> &mut Self {
+    pub fn build_and_add_transition(
+        &mut self,
+        f: impl FnOnce(TransitionBuilder<C, M>) -> Transition<C, M>,
+    ) -> &mut Self {
         let transition = f(TransitionBuilder::<C, M>::default());
         self.add_transition(transition)
     }
 
-    pub fn build(&self) -> State<C, M> { // Consume self. Force clone(). Implies that clone is called on underlying types.
+    pub fn build(&self) -> State<C, M> {
+        // Consume self. Force clone(). Implies that clone is called on underlying types.
         State::new(
-            self.display_name.as_ref().expect("Display name is required"), 
-            self.command_output_to_display_mapper.as_ref().expect("Command output to display mapper is required").clone(),
+            self.display_name
+                .as_ref()
+                .expect("Display name is required"),
+            self.command_output_to_display_mapper
+                .as_ref()
+                .expect("Command output to display mapper is required")
+                .clone(),
             Rc::clone(self.context.as_ref().expect("Context is required")),
             self.transitions.clone(),
         )

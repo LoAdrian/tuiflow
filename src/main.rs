@@ -5,17 +5,16 @@ use crossterm::event::{self, Event};
 use ratatui::{text::Text, widgets::Paragraph, Frame};
 use regex::Regex;
 
-mod model;
 mod builders;
+mod model;
 
-fn main() {
-}
+fn main() {}
 
 struct W {
-    s: Box<dyn T>
+    s: Box<dyn T>,
 }
 
-/* 
+/*
 impl W {
     fn new(s: impl T) -> W{
         //This does not work, the compiler looses information about the (implicit) lifetime of s
@@ -37,7 +36,7 @@ impl<V: T> W2<V> {
 */
 
 struct S<'a> {
-    x: &'a i32
+    x: &'a i32,
 }
 
 trait T {

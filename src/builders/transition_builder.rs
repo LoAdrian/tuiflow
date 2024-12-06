@@ -1,6 +1,11 @@
 use std::rc::Rc;
 
-use crate::model::{state::{State, StateContext}, transition::Transition, variable_mapping::VariableMapper, Control};
+use crate::model::{
+    state::{State, StateContext},
+    transition::Transition,
+    variable_mapping::VariableMapper,
+    Control,
+};
 
 pub struct TransitionBuilder<C: StateContext<M>, M: VariableMapper> {
     control: Option<Control>,
@@ -19,7 +24,9 @@ impl<C: StateContext<M>, M: VariableMapper> Default for TransitionBuilder<C, M> 
 }
 
 impl<C: StateContext<M>, M: VariableMapper> TransitionBuilder<C, M> {
-    pub fn new() -> Self { Default::default() }
+    pub fn new() -> Self {
+        Default::default()
+    }
 
     pub fn with_control(&mut self, control: Control) -> &mut Self {
         self.control = Some(control);
@@ -31,16 +38,25 @@ impl<C: StateContext<M>, M: VariableMapper> TransitionBuilder<C, M> {
         self
     }
 
-    pub fn with_selected_display_to_command(&mut self, selected_display_to_command: M) -> &mut Self {
+    pub fn with_selected_display_to_command(
+        &mut self,
+        selected_display_to_command: M,
+    ) -> &mut Self {
         self.selected_display_to_command = Some(selected_display_to_command);
         self
     }
 
     pub fn build(&self) -> Transition<C, M> {
         Transition::new(
-            self.control.clone().expect("Control is required to build Transition"),
-            self.next_state.clone().expect("Next state is required to build Transition"),
-            self.selected_display_to_command.clone().expect("Selected display to command is required to build Transition"),
+            self.control
+                .clone()
+                .expect("Control is required to build Transition"),
+            self.next_state
+                .clone()
+                .expect("Next state is required to build Transition"),
+            self.selected_display_to_command
+                .clone()
+                .expect("Selected display to command is required to build Transition"),
         )
     }
 }

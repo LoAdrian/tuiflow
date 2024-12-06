@@ -1,4 +1,3 @@
-use mockall::automock;
 use regex::Regex;
 
 use super::{VariableMapper, VariableMapperCompilationError, VariableMappingError};
@@ -30,7 +29,6 @@ impl VariableMapper for RegexVariableMapper {
         let input_capture_groups = self.input_filter.captures_iter(input);
         let input_filter_variable_names = self.input_filter.capture_names().skip(1);
 
-
         let iter = input_capture_groups
             .map(|input_capture_group| {
                 let mut output: String = self.output_format.clone();
@@ -60,36 +58,56 @@ mod variable_mapper_tests {
 
     #[test]
     fn whitespace_mapper_example_works_without_error() {
-        let extractor = RegexVariableMapper::new(r"\s*(?<name>[^\s]+)\s*", r"Hello, <name>!").unwrap();
+        let extractor =
+            RegexVariableMapper::new(r"\s*(?<name>[^\s]+)\s*", r"Hello, <name>!").unwrap();
         let extracted = extractor.map("  world  ").nth(0).unwrap().unwrap();
         assert_eq!(extracted, "Hello, world!");
     }
 
     #[test]
     fn mapper_example_with_variable_used_multiple_times_maps_variable_multiple_times() {
-        let extractor = RegexVariableMapper::new(r"\s*(?<name>[^\s]+)\s*", r"Hello, <name>! Nice to meet you, <name>.").unwrap();
+        let extractor = RegexVariableMapper::new(
+            r"\s*(?<name>[^\s]+)\s*",
+            r"Hello, <name>! Nice to meet you, <name>.",
+        )
+        .unwrap();
         let extracted = extractor.map("  charles  ").nth(0).unwrap().unwrap();
         assert_eq!(extracted, "Hello, charles! Nice to meet you, charles.");
     }
 
     #[test]
     fn mapper_example_with_multiple_variables_maps_all_variables() {
-        let extractor = RegexVariableMapper::new(r"(?<name1>.+),(?<name2>.+)", r"Hello, <name1>, brother of <name2>").unwrap();
+        let extractor = RegexVariableMapper::new(
+            r"(?<name1>.+),(?<name2>.+)",
+            r"Hello, <name1>, brother of <name2>",
+        )
+        .unwrap();
         let extracted = extractor.map("luke,leia").nth(0).unwrap().unwrap();
         assert_eq!(extracted, "Hello, luke, brother of leia");
     }
 
     #[test]
-    fn mapper_example_with_multiple_variables_used_multiple_times_maps_all_variables_multiple_times() {
-        let extractor = RegexVariableMapper::new(r"(?<name1>.+),(?<name2>.+)", r"Hello, <name1>, brother of <name2>. Hello <name2>, sister of <name1>.").unwrap();
+    fn mapper_example_with_multiple_variables_used_multiple_times_maps_all_variables_multiple_times(
+    ) {
+        let extractor = RegexVariableMapper::new(
+            r"(?<name1>.+),(?<name2>.+)",
+            r"Hello, <name1>, brother of <name2>. Hello <name2>, sister of <name1>.",
+        )
+        .unwrap();
         let extracted = extractor.map("leto,ghanima").nth(0).unwrap().unwrap();
-        assert_eq!(extracted, "Hello, leto, brother of ghanima. Hello ghanima, sister of leto.");
+        assert_eq!(
+            extracted,
+            "Hello, leto, brother of ghanima. Hello ghanima, sister of leto."
+        );
     }
 
     #[test]
     fn whitespace_mapper_example_with_multiple_matches_works_correctly() {
-        let extractor = RegexVariableMapper::new(r"\x20*(?<name>[^\x20\n]+)\x20*\n", r"Hello, <name>!").unwrap();
-        let extracted: Vec<Result<String, VariableMappingError>> = extractor.map("  mamfred \n charlie  \n").collect();
+        let extractor =
+            RegexVariableMapper::new(r"\x20*(?<name>[^\x20\n]+)\x20*\n", r"Hello, <name>!")
+                .unwrap();
+        let extracted: Vec<Result<String, VariableMappingError>> =
+            extractor.map("  mamfred \n charlie  \n").collect();
         assert_eq!(extracted[0].as_ref().unwrap(), "Hello, mamfred!");
         assert_eq!(extracted[1].as_ref().unwrap(), "Hello, charlie!");
     }
@@ -102,14 +120,16 @@ mod variable_mapper_tests {
 
     #[test]
     fn map_with_unmatching_input_returns_empty_iter() {
-        let extractor = RegexVariableMapper::new(r"\s*(?<name>[^\s]+)\s*", r"Hello, <name>!").unwrap();
+        let extractor =
+            RegexVariableMapper::new(r"\s*(?<name>[^\s]+)\s*", r"Hello, <name>!").unwrap();
         let mut extracted = extractor.map("   ");
         assert!(extracted.next().is_none());
     }
 
     #[test]
     fn map_with_matching_input_but_missing_variables_returns_err() {
-        let extractor = RegexVariableMapper::new(r"\s*d(?<name>[abc])?\s*", r"Hello, <name>!").unwrap();
+        let extractor =
+            RegexVariableMapper::new(r"\s*d(?<name>[abc])?\s*", r"Hello, <name>!").unwrap();
         let mut extracted = extractor.map(" d  ");
         assert!(extracted.nth(0).unwrap().is_err());
     }

@@ -2,11 +2,15 @@ use std::rc::Rc;
 
 use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 
-use super::{control::Control, state::{State, StateContext}, variable_mapping::RegexVariableMapper};
+use super::{
+    control::Control,
+    state::{State, StateContext},
+    variable_mapping::RegexVariableMapper,
+};
 
 pub(crate) struct Transition<C: StateContext<M>, M: VariableMapper> {
     control: Control,
-    next_state: Rc<State<C, M>>, //TODO: Check and break cycles
+    next_state: Rc<State<C, M>>,    //TODO: Check and break cycles
     selected_display_to_command: M, // regex extraction from selection
 }
 
@@ -19,10 +23,16 @@ impl<C: StateContext<M>, M: VariableMapper> Transition<C, M> {
         }
     }
 
-    pub fn get_transition_command(&self, display_selection: &str) -> Result<String, VariableMappingError> {
-        self.selected_display_to_command.map(display_selection).nth(0).unwrap()
+    pub fn get_transition_command(
+        &self,
+        display_selection: &str,
+    ) -> Result<String, VariableMappingError> {
+        self.selected_display_to_command
+            .map(display_selection)
+            .nth(0)
+            .unwrap()
     }
-    
+
     pub fn get_activation_control(&self) -> &Control {
         &self.control
     }
@@ -48,7 +58,7 @@ mod transition_tests {
 
     use crate::model::{state::MockStateContext, variable_mapping::MockVariableMapper, Control};
 
-    use super::{State, Transition, RegexVariableMapper};
+    use super::{RegexVariableMapper, State, Transition};
 
     #[test]
     fn get_next_state_returns_copied_reference_to_original_state() {
@@ -58,20 +68,21 @@ mod transition_tests {
         let command_output_to_display = MockVariableMapper::new();
         let selected_display_to_command = MockVariableMapper::new();
         let original_state = Rc::new(State::new(
-            "test_state", 
-            command_output_to_display, 
-            Rc::new(RefCell::new((context))), 
-            vec![]));
+            "test_state",
+            command_output_to_display,
+            Rc::new(RefCell::new((context))),
+            vec![],
+        ));
         let transition = Transition::new(
-            control, 
-            Rc::clone(&original_state), 
-            selected_display_to_command);
+            control,
+            Rc::clone(&original_state),
+            selected_display_to_command,
+        );
 
         // Act
         let next_state = transition.get_next_state();
 
         // Assert
         assert!(Rc::ptr_eq(&next_state, &original_state));
-        
     }
 }
