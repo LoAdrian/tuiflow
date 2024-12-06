@@ -9,7 +9,7 @@ impl Display for VariableMapperCompilationError {
 }
 
 // TODO: Add more info to error
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct VariableMappingError;
 
 impl Display for VariableMappingError {

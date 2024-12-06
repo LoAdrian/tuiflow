@@ -2,7 +2,6 @@
 pub struct Display {
     pub lines: Vec<Line>,
     pub errors: Vec<String>,
-    pub info: Option<String>
 }
 
 impl Default for Display {
@@ -10,7 +9,6 @@ impl Default for Display {
         Self { 
             lines: Default::default(), 
             errors: Default::default(),
-            info: Default::default() 
         }
     }
 }

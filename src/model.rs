@@ -8,8 +8,8 @@ pub(crate) mod display;
 pub use control::Control;
 pub use display::{Display, Line};
 
-pub trait Terminal {
-    fn run_command(&mut self, display_selection: &str, control: Control);
+pub trait TerminalFlow {
+    fn run_control(&mut self, display_selection: &str, control: &Control);
     fn get_display(&self) -> &Display;
+    fn get_controls(&self) -> Vec<Control>;
 }
-
