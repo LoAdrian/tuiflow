@@ -11,6 +11,16 @@ pub enum StateTransitionError {
 
 impl Display for StateTransitionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        match self {
+            StateTransitionError::SelectionToCommandMappingFailed(e) => {
+                write!(f, "Selection to command mapping failed: {e}")
+            }
+            StateTransitionError::ControlNotFound(control) => {
+                write!(f, "Control not found: {control}")
+            }
+            StateTransitionError::CliCommandExecutionFailed(command) => {
+                write!(f, "CLI command execution failed: {command}")
+            }
+        }
     }
 }

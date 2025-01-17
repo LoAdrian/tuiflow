@@ -2,18 +2,20 @@ use mockall::automock;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use super::{
-    control::Control,
+    control::{Control, Key},
     display::{Display, Line},
     error::StateTransitionError,
     transition::Transition,
-    variable_mapping::{RegexVariableMapper, VariableMapper},
+    variable_mapping::VariableMapper,
 };
+
+pub(crate) mod builder;
 
 #[derive(Clone)]
 pub(crate) struct State<C: StateContext<M>, M: VariableMapper> {
     display_name: String,
     command_output_to_display: M,
-    transitions: HashMap<String, Transition<C, M>>,
+    transitions: HashMap<Key, Transition<C, M>>,
     context: Rc<RefCell<C>>,
 }
 
@@ -26,8 +28,8 @@ impl<C: StateContext<M>, M: VariableMapper> State<C, M> {
     ) -> Self {
         let transition_mapping = transitions
             .into_iter()
-            .map(|t: Transition<C, M>| (String::from(t.get_activation_control().get_key()), t))
-            .collect::<HashMap<String, Transition<C, M>>>();
+            .map(|t: Transition<C, M>| (t.get_activation_control().get_key(), t))
+            .collect::<HashMap<Key, Transition<C, M>>>();
 
         Self {
             display_name: String::from(display_name),
@@ -39,7 +41,7 @@ impl<C: StateContext<M>, M: VariableMapper> State<C, M> {
 
     pub(crate) fn add_transition(&mut self, transition: Transition<C, M>) {
         self.transitions.insert(
-            String::from(transition.get_activation_control().get_key()),
+            transition.get_activation_control().get_key(),
             transition,
         );
     }
@@ -50,7 +52,7 @@ impl<C: StateContext<M>, M: VariableMapper> State<C, M> {
         control: &Control,
     ) -> Result<(), StateTransitionError> {
         // TODO Change this to take a key, not a whole control, also: wrap key into a value-object
-        if let Some(transition) = self.transitions.get(control.get_key()) {
+        if let Some(transition) = self.transitions.get(&control.get_key()) {
             let transition_command = transition.get_transition_command(display_selection);
             if let Ok(command_to_execute) = transition_command {
                 let next_state = transition.get_next_state();
@@ -111,15 +113,9 @@ pub(crate) trait StateContext<M: VariableMapper>: Sized {
 mod state_tests {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::{
-        builders::{StateBuilder, TransitionBuilder},
-        model::{
-            error::StateTransitionError,
-            state::MockStateContext,
-            variable_mapping::{MockVariableMapper, VariableMappingError},
-            Control,
-        },
-    };
+    use crate::model::{
+            control::Key, error::StateTransitionError, state::{builder::StateBuilder, MockStateContext}, transition::builder::TransitionBuilder, variable_mapping::{MockVariableMapper, VariableMappingError}, Control
+        };
 
     #[test]
     fn transition_with_unexisting_controlkey_returns_error() {
@@ -133,7 +129,7 @@ mod state_tests {
         .with_context(Rc::new(RefCell::new(MockStateContext::new())))
         .build();
 
-        let non_existing_control = Control::new("non_existing_control", "c");
+        let non_existing_control = Control::new("non_existing_control", Key::Char('c'));
 
         // Act
         let result = state_under_test.transition("test_selection", &non_existing_control);
@@ -153,7 +149,7 @@ mod state_tests {
         mock_context.expect_run_command().return_const(Err(()));
 
         let mock_context_ref = Rc::new(RefCell::new(mock_context));
-        let fake_control = Control::new("non_existing_control", "c");
+        let fake_control = Control::new("non_existing_control", Key::Char('c'));
         let fake_target_state = StateBuilder::new()
             .with_display_name("TARGET".to_string())
             .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
@@ -194,7 +190,7 @@ mod state_tests {
             .return_const(Ok("GREAT SUCCESS".to_string()));
 
         let mock_context_ref = Rc::new(RefCell::new(mock_context));
-        let fake_control = Control::new("non_existing_control", "c");
+        let fake_control = Control::new("non_existing_control", Key::Char('c'));
         let fake_target_state = StateBuilder::new()
             .with_display_name("TARGET".to_string())
             .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))

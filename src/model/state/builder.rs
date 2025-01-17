@@ -6,7 +6,7 @@ use crate::model::{
     variable_mapping::VariableMapper,
 };
 
-use super::TransitionBuilder;
+use crate::model::transition::builder::TransitionBuilder;
 
 #[derive(Clone)]
 pub struct StateBuilder<C: StateContext<M>, M: VariableMapper> {

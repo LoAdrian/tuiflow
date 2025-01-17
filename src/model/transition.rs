@@ -5,8 +5,9 @@ use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 use super::{
     control::Control,
     state::{State, StateContext},
-    variable_mapping::RegexVariableMapper,
 };
+
+pub(crate) mod builder;
 
 pub(crate) struct Transition<C: StateContext<M>, M: VariableMapper> {
     control: Control,
@@ -56,15 +57,15 @@ impl<C: StateContext<M>, M: VariableMapper> Clone for Transition<C, M> {
 mod transition_tests {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::model::{state::MockStateContext, variable_mapping::MockVariableMapper, Control};
+    use crate::model::{control::Key, state::MockStateContext, variable_mapping::MockVariableMapper, Control};
 
-    use super::{RegexVariableMapper, State, Transition};
+    use super::{State, Transition};
 
     #[test]
     fn get_next_state_returns_copied_reference_to_original_state() {
         // Arrange
         let context = MockStateContext::new();
-        let control = Control::new("test_control", "c");
+        let control = Control::new("test_control", Key::Char('a'));
         let command_output_to_display = MockVariableMapper::new();
         let selected_display_to_command = MockVariableMapper::new();
         let original_state = Rc::new(State::new(

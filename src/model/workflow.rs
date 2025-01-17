@@ -8,6 +8,8 @@ use super::{
     Line, TerminalFlow,
 };
 
+pub(crate) mod builder;
+
 pub(crate) struct Workflow<R: CommandRunner, M: VariableMapper> {
     current_display: Option<Display>,
     current_state: Option<Rc<State<Self, M>>>,
@@ -128,7 +130,7 @@ pub struct ShCommandRunner;
 
 impl CommandRunner for ShCommandRunner {
     fn run_command(&self, command: &str) -> Result<String, ()> {
-        let cli_result = Command::new("sh").arg("-c").arg(command.clone()).output();
+        let cli_result = Command::new("sh").arg("-c").arg(command).output();
         if let Ok(cli_output) = cli_result {
             Ok(String::from_utf8(cli_output.stdout).unwrap())
         } else {

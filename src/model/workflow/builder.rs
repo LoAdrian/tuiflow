@@ -6,7 +6,7 @@ use crate::model::{
     workflow::{CommandRunner, Workflow},
 };
 
-use super::StateBuilder;
+use crate::model::state::builder::StateBuilder;
 
 #[derive(Clone)]
 pub struct WorkflowBuilder<C: CommandRunner, M: VariableMapper> {

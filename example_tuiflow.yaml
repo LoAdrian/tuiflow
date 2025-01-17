@@ -1,6 +1,12 @@
 version: 1.0
 title: my_tuiflow
 controls:
+  - UP: # special: has to be set, cannot be used by transitions
+    display_name: up
+    keys: k
+  - DOWN: # special: has to be set, cannot be used by transitions
+    display_name: down
+    keys: j
   - select:
     display_name: select
     keys: l # currently only single key and no combined keys, might change later
