@@ -1,3 +1,4 @@
+use buildable_macro::buildable;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
@@ -7,6 +8,8 @@ use ratatui::{
 
 use super::key_control_view_model::KeyControlViewModel;
 
+#[buildable]
+#[derive(Clone)]
 pub struct LegendWidget {
     main_block: Block<'static>,
     entries: Vec<Paragraph<'static>>,
@@ -14,6 +17,7 @@ pub struct LegendWidget {
 
 impl LegendWidget {
     pub fn new(entries: Vec<KeyControlViewModel>) -> Self {
+
         Self {
             main_block: Block::new()
                 .style(Style::default().bg(Color::LightGreen).fg(Color::Blue))
@@ -21,8 +25,11 @@ impl LegendWidget {
             entries: entries
                 .iter()
                 .map(|entry| Paragraph::new(String::from(entry)).bg(Color::Gray))
-                .collect::<Vec<Paragraph<'_>>>(),
+                .collect::<Vec<Paragraph<'_>>>()
         }
+    }
+    pub fn get_legend_size(&self) -> usize {
+        self.entries.len()
     }
 }
 
@@ -30,8 +37,9 @@ pub const WIDGET_PADDING_VERTICAL: u16 = 2;
 impl WidgetRef for LegendWidget {
     // TODO: This is still very dynamic. Either i should make it more static by doing more inside the constructor or actually use the dynamicness and calculate the layout based on screen-size
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        let column_count = if self.entries.len() < 3 {
-            self.entries.len() as u32
+        let legend_size = self.get_legend_size();
+        let column_count = if legend_size < 3 {
+            legend_size as u32
         } else {
             3
         };
@@ -39,18 +47,13 @@ impl WidgetRef for LegendWidget {
             .map(|_| Constraint::Ratio(1, column_count))
             .collect::<Vec<_>>();
         let horizontal_layout = Layout::horizontal(horizontal_constraints);
-        let row_count = (self.entries.len() as f32 / 3.0).ceil() as u32;
+        let row_count = (legend_size as f32 / 3.0).ceil() as u32;
         let vertical_constraints = (0..row_count)
             .map(|_| Constraint::Ratio(1, row_count))
             .collect::<Vec<_>>();
         let vertical_layout = Layout::vertical(vertical_constraints);
 
-        let block = Block::new()
-            .style(Style::default().bg(Color::LightGreen).fg(Color::Blue))
-            .borders(Borders::ALL);
-        let block_content = block.inner(area);
-
-        let rows = vertical_layout.split(block_content);
+        let rows = vertical_layout.split(self.main_block.inner(area));
         let fields = rows.iter().flat_map(|row| {
             horizontal_layout
                 .split(*row)
@@ -58,11 +61,26 @@ impl WidgetRef for LegendWidget {
                 .copied()
                 .collect::<Vec<_>>()
         });
-        block.render_ref(area, buf);
+        self.main_block.render_ref(area, buf);
 
         self.entries
             .iter()
             .zip(fields)
             .for_each(|(entry, field): (&Paragraph<'_>, Rect)| entry.render_ref(field, buf));
+    }
+}
+
+pub struct LegendViewModel {
+    entries: Vec<Paragraph<'static>>,
+}
+
+impl LegendViewModel {
+    pub fn new(entries: Vec<KeyControlViewModel>) -> Self {
+        Self {
+            entries: entries
+                .iter()
+                .map(|entry| Paragraph::new(String::from(entry)).bg(Color::Gray))
+                .collect::<Vec<Paragraph<'_>>>()
+        }
     }
 }

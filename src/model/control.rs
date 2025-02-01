@@ -33,20 +33,6 @@ impl Display for Control {
 #[derive(Hash, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Key {
     Char(char),
-    SpecialKey(SpecialKey),
-}
-
-impl Display for Key {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Key::Char(c) => write!(f, "{}", c),
-            Key::SpecialKey(s) => write!(f, "{}", s.to_string()),
-        }
-    }
-}
-
-#[derive(Hash, Debug, PartialEq, Eq, Clone, Copy)]
-pub enum SpecialKey {
     Enter,
     Backspace,
     Tab,
@@ -64,24 +50,27 @@ pub enum SpecialKey {
     F(u8),
 }
 
-impl Display for SpecialKey {
+impl Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SpecialKey::Enter => write!(f, "Enter"),
-            SpecialKey::Backspace => write!(f, "Backspace"),
-            SpecialKey::Tab => write!(f, "Tab"),
-            SpecialKey::Esc => write!(f, "Esc"),
-            SpecialKey::Up => write!(f, "Up"),
-            SpecialKey::Down => write!(f, "Down"),
-            SpecialKey::Left => write!(f, "Left"),
-            SpecialKey::Right => write!(f, "Right"),
-            SpecialKey::Home => write!(f, "Home"),
-            SpecialKey::End => write!(f, "End"),
-            SpecialKey::PageUp => write!(f, "PageUp"),
-            SpecialKey::PageDown => write!(f, "PageDown"),
-            SpecialKey::Delete => write!(f, "Delete"),
-            SpecialKey::Insert => write!(f, "Insert"),
-            SpecialKey::F(n) => write!(f, "F{}", n),
+            Key::Char(c) => write!(f, "{}", c),
+            Key::Enter => write!(f, "Enter"),
+            Key::Backspace => write!(f, "Backspace"),
+            Key::Tab => write!(f, "Tab"),
+            Key::Esc => write!(f, "Esc"),
+            Key::Up => write!(f, "Up"),
+            Key::Down => write!(f, "Down"),
+            Key::Left => write!(f, "Left"),
+            Key::Right => write!(f, "Right"),
+            Key::Home => write!(f, "Home"),
+            Key::End => write!(f, "End"),
+            Key::PageUp => write!(f, "PageUp"),
+            Key::PageDown => write!(f, "PageDown"),
+            Key::Delete => write!(f, "Delete"),
+            Key::Insert => write!(f, "Insert"),
+            Key::F(n) => write!(f, "F{}", n),
         }
     }
 }
+
+

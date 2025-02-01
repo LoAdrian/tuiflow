@@ -3,19 +3,23 @@ title: my_tuiflow
 controls:
   - UP: # special: has to be set, cannot be used by transitions
     display_name: up
-    keys: k
+    key: k # default
   - DOWN: # special: has to be set, cannot be used by transitions
     display_name: down
-    keys: j
+    key: j # default
+  - FIND: # special: may be set, control-identifier cannto be used by transitions
+    display_name: find
+    key: f # default
+  - QUIT: # special: has to be set, cannot be used by transitions
   - select:
     display_name: select
-    keys: l # currently only single key and no combined keys, might change later
+    key: Enter # currently only single key and no combined keys, might change later
   - return:
     display_name: return
-    keys: h
+    key: Return
   - quit:
     display_name: quit
-    keys: q
+    key: Escape
 init:
   command: ls [WORKING_DIRECTORY] #variables marked with `[]` are reserved and given special meaning by the system
 states:

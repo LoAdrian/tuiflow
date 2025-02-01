@@ -1,19 +1,22 @@
+use buildable_macro::buildable;
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Block, Borders, Paragraph, Widget, WidgetRef}};
 
+#[buildable]
+#[derive(Clone)]
 pub struct TitleBarWidget {
     app_title: Paragraph<'static>,
     state_title: Paragraph<'static>,
 }
 
 impl TitleBarWidget {
-    pub fn new(app_title: impl Into<String>, state_title: impl Into<String>) -> Self {
+    pub fn new(app_title: String, state_title: String) -> Self {
         Self { 
-            app_title: Paragraph::new(app_title.into())
+            app_title: Paragraph::new(app_title)
                 .centered(), 
-            state_title: Paragraph::new(state_title.into())
+            state_title: Paragraph::new(state_title)
                 .centered()
                 .bold()
-                .underlined(), 
+                .underlined(),
         }
     }
 }
