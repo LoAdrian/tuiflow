@@ -22,12 +22,19 @@ impl RegexVariableMapper {
             output_format: String::from(output_format),
         })
     }
+
+    pub fn identity() -> Self {
+        Self {
+            input_filter: Regex::new("(?<input>.*)").unwrap(),
+            output_format: String::from("<input>"),
+        }
+    }
 }
 
 impl VariableMapper for RegexVariableMapper {
     fn map(&self, input: &str) -> impl Iterator<Item = Result<String, VariableMappingError>> {
         let input_capture_groups = self.input_filter.captures_iter(input);
-        let input_filter_variable_names = self.input_filter.capture_names().skip(1);
+        let input_filter_variable_names = self.input_filter.capture_names().skip(1); // skip whole match
 
         let iter = input_capture_groups
             .map(|input_capture_group| {

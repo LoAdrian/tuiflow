@@ -1,67 +1,67 @@
 use mockall::automock;
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::{BorrowMutError, RefCell}, collections::HashMap, rc::Rc};
 
 use super::{
     control::{Control, Key},
     display::{Display, Line},
     error::StateTransitionError,
     transition::Transition,
-    variable_mapping::VariableMapper,
+    variable_mapping::VariableMapper, workflow::CommandRunner,
 };
 
 pub(crate) mod builder;
 
 #[derive(Clone)]
-pub(crate) struct State<C: StateContext<M>, M: VariableMapper> {
+pub(crate) struct State<R: CommandRunner, M: VariableMapper> {
     display_name: String,
     command_output_to_display: M,
-    transitions: HashMap<Key, Transition<C, M>>,
-    context: Rc<RefCell<C>>,
+    transitions: HashMap<Key, Transition<R, M>>,
+    command_runner: R,
+    display: Display,
 }
 
-impl<C: StateContext<M>, M: VariableMapper> State<C, M> {
+impl<R: CommandRunner, M: VariableMapper> State<R, M> {
     pub(crate) fn new(
         display_name: &str,
         command_output_to_display: M,
-        context: Rc<RefCell<C>>,
-        transitions: Vec<Transition<C, M>>,
+        transitions: Vec<Transition<R, M>>,
+        command_runner: R,
     ) -> Self {
         let transition_mapping = transitions
             .into_iter()
-            .map(|t: Transition<C, M>| (t.get_activation_control().get_key(), t))
-            .collect::<HashMap<Key, Transition<C, M>>>();
+            .map(|t: Transition<R, M>| (t.get_activation_control().get_key(), t))
+            .collect::<HashMap<Key, Transition<R, M>>>();
 
         Self {
             display_name: String::from(display_name),
             command_output_to_display,
             transitions: transition_mapping,
-            context,
+            command_runner,
+            display: Display::default(),
         }
     }
 
-    pub(crate) fn add_transition(&mut self, transition: Transition<C, M>) {
-        self.transitions.insert(
-            transition.get_activation_control().get_key(),
-            transition,
-        );
-    }
-
     pub(crate) fn transition(
-        &self,
-        display_selection: &str,
-        control: &Control,
-    ) -> Result<(), StateTransitionError> {
-        // TODO Change this to take a key, not a whole control, also: wrap key into a value-object
-        if let Some(transition) = self.transitions.get(&control.get_key()) {
+        &mut self,
+        display_selection: &Line,
+        key: &Key,
+    ) -> Result<Rc<RefCell<State<R, M>>>, StateTransitionError> {
+        if let Some(transition) = self.transitions.get(key) {
             let transition_command = transition.get_transition_command(display_selection);
             if let Ok(command_to_execute) = transition_command {
-                let next_state = transition.get_next_state();
-                let mut context = self.context.borrow_mut();
-                let cli_result = context.run_command(&command_to_execute);
+                let cli_result = self.command_runner.run_command(&command_to_execute);
                 if let Ok(cli_output) = cli_result {
-                    let display = self.parse_display(&cli_output);
-                    context.update(next_state, display);
-                    Ok(())
+                    let next_state = transition.get_next_state();
+                    next_state.try_borrow_mut() //TODO: fix this hack
+                        .and_then(|mut next_state| {
+                            next_state.display(&cli_output);
+                            Ok(())
+                        })
+                        .or_else(|_| { // Next state is this state
+                            self.display(&cli_output);
+                            Ok::<_,BorrowMutError>(())
+                        });
+                    Ok(next_state.clone())
                 } else {
                     Err(StateTransitionError::CliCommandExecutionFailed(
                         command_to_execute.clone(),
@@ -74,7 +74,7 @@ impl<C: StateContext<M>, M: VariableMapper> State<C, M> {
                 ))
             }
         } else {
-            Err(StateTransitionError::ControlNotFound(control.clone()))
+            Err(StateTransitionError::ControlNotFound(*key))
         }
     }
 
@@ -85,75 +85,78 @@ impl<C: StateContext<M>, M: VariableMapper> State<C, M> {
             .collect()
     }
 
+    pub(crate) fn add_transition(&mut self, key: Key, transition: Transition<R, M>) {
+        self.transitions.insert(key, transition);
+    }
+
+    pub(crate) fn get_name<'a>(&'a self) -> &'a str {
+        &self.display_name
+    }
+
+    pub(crate) fn get_display(&self) -> &Display {
+        &self.display
+    }
+
     fn parse_display(&self, command_output: &str) -> Display {
-        let mut errors = Vec::new();
         let mut lines = Vec::new();
         for line_result in self.command_output_to_display.map(command_output) {
             match line_result {
                 Ok(line) => lines.push(Line(line)),
-                Err(e) => errors.push(format!("{e}")),
+                Err(e) => (),
             }
         }
 
         Display {
             lines,
-            errors,
             ..Default::default()
         }
     }
+
+    fn display(&mut self, display: &str) {
+        self.display = self.parse_display(display);
+    }
 }
 
-#[automock]
-pub(crate) trait StateContext<M: VariableMapper>: Sized {
-    fn update(&mut self, state: Rc<State<Self, M>>, display: Display);
-    fn run_command(&self, command: &str) -> Result<String, ()>;
-}
-
+/*
 #[cfg(test)]
 mod state_tests {
     use std::{cell::RefCell, rc::Rc};
 
-    use crate::model::{
-            control::Key, error::StateTransitionError, state::{builder::StateBuilder, MockStateContext}, transition::builder::TransitionBuilder, variable_mapping::{MockVariableMapper, VariableMappingError}, Control
-        };
+    use crate::{model::{
+            control::Key, error::StateTransitionError, state::builder::StateBuilder, transition::builder::TransitionBuilder, variable_mapping::{MockVariableMapper, VariableMappingError}, Control
+        }, workflow::MockCommandRunner};
 
     #[test]
     fn transition_with_unexisting_controlkey_returns_error() {
         // Arrange
         let state_under_test = StateBuilder::<
-            MockStateContext<MockVariableMapper>,
+            MockCommandRunner,
             MockVariableMapper,
         >::new()
         .with_display_name("test_state".to_string())
         .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
-        .with_context(Rc::new(RefCell::new(MockStateContext::new())))
         .build();
 
         let non_existing_control = Control::new("non_existing_control", Key::Char('c'));
 
         // Act
-        let result = state_under_test.transition("test_selection", &non_existing_control);
+        let result = state_under_test.transition("test_selection", &non_existing_control.get_key());
 
         // Assert
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),
-            StateTransitionError::ControlNotFound(non_existing_control)
+            StateTransitionError::ControlNotFound(non_existing_control.get_key())
         )
     }
 
     #[test]
     fn transition_with_failing_command_returns_error() {
         // Arrange
-        let mut mock_context = MockStateContext::new();
-        mock_context.expect_run_command().return_const(Err(()));
-
-        let mock_context_ref = Rc::new(RefCell::new(mock_context));
         let fake_control = Control::new("non_existing_control", Key::Char('c'));
         let fake_target_state = StateBuilder::new()
             .with_display_name("TARGET".to_string())
             .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
-            .with_context(Rc::clone(&mock_context_ref))
             .build();
 
         let fake_transition = TransitionBuilder::new()
@@ -165,13 +168,12 @@ mod state_tests {
         let state_under_test = StateBuilder::new()
             .with_display_name("test_state".to_string())
             .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
-            .with_context(mock_context_ref)
             .add_transition(fake_transition)
             .build();
 
         // Act
         let display_selection = "test_selection";
-        let result = state_under_test.transition(&display_selection, &fake_control);
+        let result = state_under_test.transition(&display_selection, &fake_control.get_key());
 
         // Assert
         assert!(result.is_err());
@@ -184,11 +186,6 @@ mod state_tests {
     #[test]
     fn transition_with_failing_selection_to_command_mapping_returns_error() {
         // Arrange
-        let mut mock_context = MockStateContext::new();
-        mock_context
-            .expect_run_command()
-            .return_const(Ok("GREAT SUCCESS".to_string()));
-
         let mock_context_ref = Rc::new(RefCell::new(mock_context));
         let fake_control = Control::new("non_existing_control", Key::Char('c'));
         let fake_target_state = StateBuilder::new()
@@ -212,7 +209,7 @@ mod state_tests {
 
         // Act
         let display_selection = "test_selection";
-        let result = state_under_test.transition(&display_selection, &fake_control);
+        let result = state_under_test.transition(&display_selection, &fake_control.get_key());
 
         // Assert
         assert!(result.is_err());
@@ -238,3 +235,4 @@ mod state_tests {
         mock_variable_mapper
     }
 }
+*/

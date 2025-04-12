@@ -1,19 +1,19 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
-use crate::model::{
-    state::{State, StateContext},
+use crate::{model::{
+    state::State,
     transition::Transition,
     variable_mapping::VariableMapper,
     Control,
-};
+}, workflow::CommandRunner};
 
-pub struct TransitionBuilder<C: StateContext<M>, M: VariableMapper> {
+pub struct TransitionBuilder<R: CommandRunner, M: VariableMapper> {
     control: Option<Control>,
-    next_state: Option<Rc<State<C, M>>>,
+    next_state: Option<Rc<RefCell<State<R, M>>>>,
     selected_display_to_command: Option<M>,
 }
 
-impl<C: StateContext<M>, M: VariableMapper> Default for TransitionBuilder<C, M> {
+impl<R: CommandRunner, M: VariableMapper> Default for TransitionBuilder<R, M> {
     fn default() -> Self {
         Self {
             control: Default::default(),
@@ -23,7 +23,7 @@ impl<C: StateContext<M>, M: VariableMapper> Default for TransitionBuilder<C, M> 
     }
 }
 
-impl<C: StateContext<M>, M: VariableMapper> TransitionBuilder<C, M> {
+impl<R: CommandRunner, M: VariableMapper> TransitionBuilder<R, M> {
     pub fn new() -> Self {
         Default::default()
     }
@@ -33,7 +33,7 @@ impl<C: StateContext<M>, M: VariableMapper> TransitionBuilder<C, M> {
         self
     }
 
-    pub fn with_next_state(&mut self, next_state: Rc<State<C, M>>) -> &mut Self {
+    pub fn with_next_state(&mut self, next_state: Rc<RefCell<State<R, M>>>) -> &mut Self {
         self.next_state = Some(next_state);
         self
     }
@@ -46,7 +46,7 @@ impl<C: StateContext<M>, M: VariableMapper> TransitionBuilder<C, M> {
         self
     }
 
-    pub fn build(&self) -> Transition<C, M> {
+    pub fn build(&self) -> Transition<R, M> {
         Transition::new(
             self.control
                 .clone()

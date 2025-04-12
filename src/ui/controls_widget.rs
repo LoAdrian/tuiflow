@@ -1,30 +1,29 @@
-use buildable_macro::buildable;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style, Stylize},
-    widgets::{Block, Borders, Paragraph, WidgetRef},
+    style::{Color, Stylize},
+    widgets::{Block, BorderType, Borders, Paragraph, StatefulWidgetRef, WidgetRef},
 };
+
+use crate::State;
 
 use super::key_control_view_model::KeyControlViewModel;
 
-#[buildable]
 #[derive(Clone)]
-pub struct LegendWidget {
+pub struct ControlsWidget {
     main_block: Block<'static>,
-    entries: Vec<Paragraph<'static>>,
 }
 
-impl LegendWidget {
+impl ControlsWidget {
     pub fn new(entries: Vec<KeyControlViewModel>) -> Self {
 
         Self {
             main_block: Block::new()
-                .style(Style::default().bg(Color::LightGreen).fg(Color::Blue))
-                .borders(Borders::ALL),
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded),
             entries: entries
                 .iter()
-                .map(|entry| Paragraph::new(String::from(entry)).bg(Color::Gray))
+                .map(|entry| Paragraph::new(String::from(entry)))
                 .collect::<Vec<Paragraph<'_>>>()
         }
     }
@@ -34,9 +33,10 @@ impl LegendWidget {
 }
 
 pub const WIDGET_PADDING_VERTICAL: u16 = 2;
-impl WidgetRef for LegendWidget {
+impl StatefulWidgetRef for ControlsWidget {
+    type State = ControlsWidgetState;
     // TODO: This is still very dynamic. Either i should make it more static by doing more inside the constructor or actually use the dynamicness and calculate the layout based on screen-size
-    fn render_ref(&self, area: Rect, buf: &mut Buffer) {
+    fn render_ref(&self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
         let legend_size = self.get_legend_size();
         let column_count = if legend_size < 3 {
             legend_size as u32
@@ -63,24 +63,31 @@ impl WidgetRef for LegendWidget {
         });
         self.main_block.render_ref(area, buf);
 
-        self.entries
+        state.entries
             .iter()
             .zip(fields)
             .for_each(|(entry, field): (&Paragraph<'_>, Rect)| entry.render_ref(field, buf));
     }
 }
 
-pub struct LegendViewModel {
-    entries: Vec<Paragraph<'static>>,
+struct ControlsWidgetState<'a> {
+    entries: Vec<Paragraph<'a>>,
 }
 
-impl LegendViewModel {
+impl<'a> ControlsWidgetState<'a> {
     pub fn new(entries: Vec<KeyControlViewModel>) -> Self {
         Self {
             entries: entries
                 .iter()
-                .map(|entry| Paragraph::new(String::from(entry)).bg(Color::Gray))
-                .collect::<Vec<Paragraph<'_>>>()
+                .map(|entry| Paragraph::new(String::from(entry)))
+                .collect::<Vec<Paragraph<'a>>>(),
         }
+    }
+
+    pub fn update(&mut self, entries: Vec<KeyControlViewModel>) {
+        self.entries = entries
+            .iter()
+            .map(|entry| Paragraph::new(String::from(entry)))
+            .collect::<Vec<Paragraph<'a>>>();
     }
 }

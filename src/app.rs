@@ -1,81 +1,63 @@
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
+use app_state::AppState;
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use eyre::{Context, Result};
 use ratatui::{
-    widgets::WidgetRef, DefaultTerminal, Frame
+    widgets::StatefulWidgetRef, DefaultTerminal, Frame
 };
 
 use crate::{
-    input::{ObservableKeyboard, Observer}, model::{control::Key, variable_mapping::RegexVariableMapper, workflow::{builder::WorkflowBuilder, ShCommandRunner, Workflow}, Control}, ui::{
-        body::BodyWidget, key_control_view_model::KeyControlViewModel, legend_widget::LegendWidget, main_widget::{MainWidget, MainWidgetBuilder}, titlebar_widget::{TitleBarWidget, TitleBarWidgetBuilder}
-    }
-};
+    input::ObservableKeyboard, model::{control::Key, Control, TerminalFlow}, ui::{
+        body::{BodyState, BodyWidget}, key_control_view_model::KeyControlViewModel, legend_widget::LegendWidgetBuilder, main_widget::{MainViewModel, MainWidget,
+    }, titlebar_widget::TitleBarWidget
+}};
 
-pub enum AppState {
-    Running,
-    Quitting,
-}
+mod app_state;
 
-impl AppState {
-    pub fn new(keyboard_observable: &mut ObservableKeyboard) -> Rc<RefCell<Self>> {
-        let _self = Rc::new(RefCell::new(Self::Running));
-        keyboard_observable.register(Key::Char('q'), _self.clone());        
-        _self
-    }
-    pub fn quit(&mut self) {
-        *self = Self::Quitting;
-    }
-
-    pub fn is_running(&self) -> bool {
-        match self {
-            Self::Running => true,
-            Self::Quitting => false,
-        }
-    }
-}
-
-impl Observer for AppState {
-    fn update(&mut self, key: Key) {
-        match key {
-            Key::Char('q') => self.quit(),
-            _ => (),
-        }
-    }
-}
-
-pub struct App {
+// TODO: App is the actual entry point -> not the main function
+// App is also not the user interface
+pub struct App<TWorkFlow: TerminalFlow> {
     app_state: Rc<RefCell<AppState>>,
-    workflow_state: Workflow<ShCommandRunner, RegexVariableMapper>,
+    view_model: Rc<RefCell<MainViewModel<TWorkFlow>>>,
     keyboard_observable: ObservableKeyboard,
-    main_widget: MainWidget,
+    main_widget: MainWidget<TWorkFlow>,
 }
 
-impl App {
-    pub fn new() -> Self {
-        let legend_entries = vec![
-            KeyControlViewModel::new(Control::new("Do shit", Key::Char('a'))),
-            KeyControlViewModel::new(Control::new("Do shit", Key::Char('a'))),
-            KeyControlViewModel::new(Control::new("Do shit", Key::Char('a'))),
-            KeyControlViewModel::new(Control::new("Do shit", Key::Char('a'))),
-        ];
-        
+impl<TWorkflow: TerminalFlow + 'static> App<TWorkflow> {
+    pub fn new(workflow: TWorkflow, all_controls: Vec<Control>, select_down: Control, select_up: Control) -> Self {
         
         let mut keyboard_observable = ObservableKeyboard::new();
+
         let app_state = AppState::new(&mut keyboard_observable);
+
+        let body_view_model = BodyState::new(&mut keyboard_observable, select_up.get_key(), select_down.get_key());
+
+        let list_content = workflow.get_display().lines.iter().map(|line| { line.0.to_string() }).collect();
+
+        let view_model = Rc::new(RefCell::new(MainViewModel::new(workflow, body_view_model)));
+        all_controls.iter().for_each(|c: &Control| { keyboard_observable.register(c.get_key(), view_model.clone()); });
         
+
+        let legend_entries = all_controls.iter().map(|control| {
+            KeyControlViewModel::new(control.clone())
+        }).collect::<Vec<_>>();
+
         let main_widget = MainWidget::new(
-            TitleBarWidget::new("app_title", "state_title"),
-            BodyWidget::new(&mut keyboard_observable, Key::Char('k'), Key::Char('j'), vec!["x".to_string(), "y".to_string(), "z".to_string()]),
-            LegendWidget::new(legend_entries),
-        );
-        let command_runner = ShCommandRunner;
-        let workflow_state = Workflow::new(command_runner);
+
+            TitleBarWidget::new(workflow.get_app_title().to_string(), workflow.get_step_title().to_string()),
+            BodyWidget::new(list_content),
+            LegendWidgetBuilder::new()
+                .with_entries(legend_entries.clone())
+                .build());
+
+
+
         Self {
             app_state,
-            workflow_state,
+            view_model,
             keyboard_observable,
-            main_widget
+            main_widget,
         }
     }
 
@@ -87,8 +69,8 @@ impl App {
         Ok(())
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        self.main_widget.render_ref(frame.area(), frame.buffer_mut());
+    fn draw(&mut self, frame: &mut Frame) {
+        self.main_widget.render_ref(frame.area(), frame.buffer_mut(), &mut self.view_model);
     }
 
     fn update(&mut self) -> Result<()> { // TODO make input handling more sophisticated and put in into input module
@@ -101,6 +83,9 @@ impl App {
         Ok(())
     }
 }
+
+//TODO move this to IO maybe
+
 
 fn key_event_to_key(event: &KeyEvent) -> Result<Key> {
     let key = match event.code {

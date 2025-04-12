@@ -26,6 +26,7 @@ impl ObservableKeyboard {
     }
 }
 
+
 #[automock]
 pub trait Observer {
     fn update(&mut self, key: Key);

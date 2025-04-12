@@ -1,126 +1,84 @@
-use std::{process::Command, rc::Rc};
+use std::{cell::{Ref, RefCell}, process::Command, rc::Rc};
+
+use mockall::automock;
 
 use super::{
-    control::Control,
-    display::Display,
-    state::{State, StateContext},
-    variable_mapping::VariableMapper,
-    Line, TerminalFlow,
+    control::{Control, Key}, display::{self, Display}, error::StateTransitionError, state::State, transition::Transition, variable_mapping::VariableMapper, Line, TerminalFlow
 };
 
 pub(crate) mod builder;
 
 pub(crate) struct Workflow<R: CommandRunner, M: VariableMapper> {
-    current_display: Option<Display>,
-    current_state: Option<Rc<State<Self, M>>>,
-    command_runner: R,
+    current_state: Rc<RefCell<State<R, M>>>,
+    app_title: String,
 }
 
 impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
-    pub fn new(command_runner: R) -> Self {
+    pub fn new(
+        initializer_state: State<R, M>,
+        initial_selection: Line,
+        app_title: String,
+    ) -> Self {
+
+        let init_control = initializer_state.get_controls().pop().expect("Initializer state must contain at least one control");
+        let mut initializer_state_mut = initializer_state;
+        let current_state = initializer_state_mut.transition(&initial_selection, &init_control.get_key())
+            .expect("Something went wrong during the intial transition");
         Self {
-            current_display: None,
-            current_state: None,
-            command_runner,
+            current_state,
+            app_title
         }
-    }
-
-    pub fn init(
-        &mut self,
-        initial_state: Rc<State<Self, M>>,
-        initial_command: &str,
-        initial_command_output_to_display: M,
-    ) {
-        self.current_state = Some(initial_state);
-        let command_output_result = self.command_runner.run_command(initial_command);
-        self.current_display = Some(Display {
-            lines: vec![],
-            errors: vec![],
-        });
-
-        // TODO: DRY!
-        if let Ok(command_output) = command_output_result {
-            initial_command_output_to_display
-                .map(command_output.as_str())
-                .for_each(|line_result| {
-                    let current_display = self.current_display.as_mut().unwrap();
-                    if let Ok(line) = line_result {
-                        current_display.lines.push(Line(line));
-                    } else if let Err(e) = line_result {
-                        current_display.errors.push(format!("{e}"));
-                    }
-                });
-        } else {
-            self.current_display
-                .as_mut()
-                .unwrap()
-                .errors
-                .push(String::from(format!(
-                    "Failed to execute initial command {initial_command}"
-                )));
-        }
-    }
-
-    fn get_current_display(&self) -> &Display {
-        self.current_display
-            .as_ref()
-            .expect("Workflow is uninitialized. Call init first.")
-    }
-
-    fn get_current_state(&self) -> &Rc<State<Self, M>> {
-        self.current_state
-            .as_ref()
-            .expect("Workflow is uninitialized. Call init first.")
-    }
-
-    fn get_current_display_mut(&mut self) -> &mut Display {
-        self.current_display
-            .as_mut()
-            .expect("Workflow is uninitialized. Call init first.")
-    }
-
-    fn get_current_state_mut(&mut self) -> &mut Rc<State<Self, M>> {
-        self.current_state
-            .as_mut()
-            .expect("Workflow is uninitialized. Call init first.")
-    }
-}
-
-impl<R: CommandRunner, M: VariableMapper> StateContext<M> for Workflow<R, M> {
-    fn update(&mut self, state: Rc<State<Self, M>>, new_display: Display) {
-        *self.get_current_display_mut() = new_display;
-        *self.get_current_state_mut() = state;
-    }
-
-    fn run_command(&self, command: &str) -> Result<String, ()> {
-        // Might be a good idea to extract this
-        self.command_runner.run_command(command)
     }
 }
 
 // TODO: Probably put this and impl to somewhere else
 impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
-    fn run_control(&mut self, display_selection: &str, control: &Control) {
-        if let Err(e) = self
-            .get_current_state()
-            .transition(display_selection, control)
+    fn run_control(&mut self, display_selection_index: usize, key: &Key) -> Result<(), StateTransitionError>{
+
+        let transition_result: Result<Rc<RefCell<State<R, M>>>, StateTransitionError>; 
         {
-            self.get_current_display_mut()
-                .errors
-                .push(String::from(format!("{e}")));
+            let selected_line: Line;
+
+            { // scoped RefCell borrow
+                // TODO move all this to state
+                let display = self
+                    .get_display();
+                selected_line = display
+                    .lines
+                    .get(display_selection_index)
+                    .expect("Invalid display selection index")
+                    .clone(); // double borrow if we don't do this // TODO: eliminate this smell
+            }
+
+        
+            transition_result = self.current_state.borrow_mut()
+                .transition(&selected_line, key);
+        }
+
+        match transition_result {
+            Ok(next_state) => {
+                self.current_state = next_state;
+                Ok(())
+            },
+            Err(e) => Err(e)
         }
     }
 
-    fn get_display(&self) -> &Display {
-        self.get_current_display()
+    fn get_display<'a>(&'a self) -> Ref<'a, Display> {
+        Ref::map(self.current_state.borrow(), |x| x.get_display())
     }
 
-    fn get_controls(&self) -> Vec<Control> {
-        self.get_current_state().get_controls()
+    fn get_step_title<'a>(&'a self) -> Ref<'_, str> {
+        Ref::map(self.current_state.borrow(), |s| s.get_name())
+    }
+
+    fn get_app_title<'a>(&'a self) -> &str {
+        &self.app_title
     }
 }
 
-pub trait CommandRunner: Clone {
+#[automock]
+pub trait CommandRunner {
     fn run_command(&self, command: &str) -> Result<String, ()>;
 }
 

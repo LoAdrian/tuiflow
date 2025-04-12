@@ -1,33 +1,33 @@
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
-use crate::model::{
-    state::{State, StateContext},
+use crate::{model::{
+    state::State,
     transition::Transition,
-    variable_mapping::VariableMapper,
-};
+    variable_mapping::VariableMapper, Display,
+}, workflow::CommandRunner};
 
 use crate::model::transition::builder::TransitionBuilder;
 
 #[derive(Clone)]
-pub struct StateBuilder<C: StateContext<M>, M: VariableMapper> {
+pub struct StateBuilder<R: CommandRunner + Clone, M: VariableMapper> {
     display_name: Option<String>,
     command_output_to_display_mapper: Option<M>,
-    context: Option<Rc<RefCell<C>>>,
-    transitions: Vec<Transition<C, M>>,
+    command_runner: Option<R>,
+    transitions: Vec<Transition<R, M>>,
 }
 
-impl<C: StateContext<M>, M: VariableMapper> Default for StateBuilder<C, M> {
+impl<R: CommandRunner + Clone, M: VariableMapper> Default for StateBuilder<R, M> {
     fn default() -> Self {
-        Self {
+        Self { 
             display_name: Default::default(),
             command_output_to_display_mapper: Default::default(),
-            context: Default::default(),
+            command_runner: Default::default(),
             transitions: Default::default(),
         }
     }
 }
 
-impl<C: StateContext<M>, M: VariableMapper> StateBuilder<C, M> {
+impl<R: CommandRunner + Clone, M: VariableMapper> StateBuilder<R, M> {
     pub fn new() -> Self {
         Default::default()
     }
@@ -45,30 +45,30 @@ impl<C: StateContext<M>, M: VariableMapper> StateBuilder<C, M> {
         self
     }
 
-    pub fn with_context(&mut self, context: Rc<RefCell<C>>) -> &mut Self {
-        self.context = Some(context);
-        self
-    }
-
-    pub fn with_transitions(&mut self, transitions: Vec<Transition<C, M>>) -> &mut Self {
+    pub fn with_transitions(&mut self, transitions: Vec<Transition<R, M>>) -> &mut Self {
         self.transitions = transitions;
         self
     }
 
-    pub fn add_transition(&mut self, transition: Transition<C, M>) -> &mut Self {
+    pub fn add_transition(&mut self, transition: Transition<R, M>) -> &mut Self {
         self.transitions.push(transition);
         self
     }
 
     pub fn build_and_add_transition(
         &mut self,
-        f: impl FnOnce(TransitionBuilder<C, M>) -> Transition<C, M>,
+        f: impl FnOnce(TransitionBuilder<R, M>) -> Transition<R, M>,
     ) -> &mut Self {
-        let transition = f(TransitionBuilder::<C, M>::default());
+        let transition = f(TransitionBuilder::<R, M>::default());
         self.add_transition(transition)
     }
 
-    pub fn build(&self) -> State<C, M> {
+    pub fn with_command_runner(&mut self, command_runner: R) -> &mut Self {
+        self.command_runner = Some(command_runner);
+        self
+    }
+
+    pub fn build(&self) -> State<R, M> {
         // Consume self. Force clone(). Implies that clone is called on underlying types.
         State::new(
             self.display_name
@@ -78,8 +78,8 @@ impl<C: StateContext<M>, M: VariableMapper> StateBuilder<C, M> {
                 .as_ref()
                 .expect("Command output to display mapper is required")
                 .clone(),
-            Rc::clone(self.context.as_ref().expect("Context is required")),
             self.transitions.clone(),
+            self.command_runner.as_ref().expect("CommandRunner is required").clone(),
         )
     }
 }
