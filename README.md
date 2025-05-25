@@ -16,6 +16,7 @@ It also will contain bugs and weird behavior.
 ## Basic concepts:
 Basically tuiflow will create a statemachine according to the supplied file.
 Every state can be thought of a work flow step and every transition can be thought of a cli-command that will lead to the nexst state.
-The displays always show some amount of lines where one line is always selected.
-Each transition contains a *mapping*, that maps the selected line on the display to a cli-command. Every *Mapping* consists of a regex matching some input and an output pattern that uses the group-names of the regex.  
-Each state also contains such a mapping mapping from the results of the cli-command delimited by newlines to the new lines to be displayed.
+The displays always show some amount of lines where one line is always selected.  
+
+Each transition  maps the selected line on the display to a cli-command. Every such *mapping* consists of a regex matching some input and an output pattern that uses the group-names of the regex.  
+Each state also maps the results of the cli-command delimited by newlines to the new lines to be displayed in the same way as the transitions map lines to commands.
