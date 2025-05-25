@@ -11,7 +11,7 @@ It also will contain bugs and weird behavior.
 
 ## Basic usage:  
 1. Create a tuiflow yaml file like in examples/dora-the-explorah.yaml
-2. run `./tuiflow \<your-file\>.yaml`
+2. run `./tuiflow <your-file>.yaml`
 
 ## Basic concepts:
 Basically tuiflow will create a statemachine according to the supplied file.
