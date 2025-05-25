@@ -57,6 +57,10 @@ impl VariableMapper for RegexVariableMapper {
             .collect::<Vec<_>>();
         iter.into_iter()
     }
+    
+    fn identity() -> Self {
+        Self::new("(?<input>.*)", "<input>").unwrap_or_else(|_| Self::identity())
+    }
 }
 
 #[cfg(test)]

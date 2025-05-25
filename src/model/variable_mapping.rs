@@ -7,6 +7,7 @@ pub(crate) use variable_mapper::RegexVariableMapper;
 
 pub trait VariableMapper: Clone {
     fn map(&self, input: &str) -> impl Iterator<Item = Result<String, VariableMappingError>>;
+    fn identity() -> Self;
 }
 
 mock! {
@@ -19,5 +20,6 @@ mock! {
 
     impl VariableMapper for VariableMapper{
         fn map(&self, input: &str) -> impl Iterator<Item = Result<String, VariableMappingError>>;
+        fn identity() -> Self;
     }
 }

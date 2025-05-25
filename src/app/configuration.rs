@@ -7,8 +7,9 @@ use std::collections::HashMap;
 pub(crate) struct AppConfiguration {
     pub app_title: String,
     pub controls: ControlsConfiguration,
-    pub  initial_command: String,
-    pub  states: HashMap<String, StateConfiguration>,
+    pub initial_command: String,
+    pub initial_state: String,
+    pub states: HashMap<String, StateConfiguration>,
 
 }
 
@@ -65,15 +66,16 @@ controls:
     name: quit
     key: !Char 'q'
   custom_controls:
-    moveinto:
-      name: move into
-      key: !Char 'l'
     moveback:
       name: move back
       key: !Char 'h'
+    moveinto:
+      name: move into
+      key: !Char 'l'
 initial_command: ls
+initial_state: show_files
 states:
-  show files:
+  show_files:
     transitions:
     - control_name: moveinto
       selection_filter: (?<x>.*)
@@ -102,8 +104,9 @@ states:
                 ..Default::default()
             },
             initial_command: "ls".to_string(),
+            initial_state: "show_files".to_string(),
             states: HashMap::from([(
-                "show files".to_string(),
+                "show_files".to_string(),
                 StateConfiguration {
                     line_filter: "(?<path>.+)".to_string(),
                     line_display_pattern: "<path>".to_string(),
@@ -143,8 +146,9 @@ states:
                 ..Default::default()
             },
             initial_command: "ls".to_string(),
+            initial_state: "show_files".to_string(),
             states: HashMap::from([(
-                "show files".to_string(),
+                "show_files".to_string(),
                 StateConfiguration {
                     line_filter: "(?<path>.+)".to_string(),
                     line_display_pattern: "<path>".to_string(),

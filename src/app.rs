@@ -1,6 +1,5 @@
-use crate::app::configuration::{
-    AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration,
-};
+use crate::app::configuration::AppConfiguration;
+use crate::app::factory::WorkflowFactory;
 use crate::{
     input::InputUpdatedViewModel,
     model::{control::Key, Control},
@@ -8,14 +7,13 @@ use crate::{
     workflow::ShCommandRunner,
     RegexVariableMapper, Workflow,
 };
-use state::AppState;
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use eyre::{Context, Result};
 use ratatui::{widgets::StatefulWidgetRef, DefaultTerminal, Frame};
-use std::collections::HashMap;
+use state::AppState;
 use std::time::Duration;
 
-mod configuration;
+pub(crate) mod configuration;
 mod state;
 mod factory;
 
@@ -24,23 +22,26 @@ mod factory;
 pub struct App {
     app_state: AppState,
     quit_control: Control,
+    workflow: Workflow<ShCommandRunner, RegexVariableMapper>,
 }
 
 impl App {
-    pub fn new(quit_control: Control) -> Self {
+    pub fn new(configuration: AppConfiguration) -> Self {
+        let quit_control = configuration.controls.quit.clone();
         Self {
             app_state: AppState::Running,
+            workflow: WorkflowFactory::build_from_configuration(configuration),
             quit_control,
+            
         }
     }
 
     pub fn run(
         mut self,
         mut terminal: DefaultTerminal,
-        mut workflow: Workflow<ShCommandRunner, RegexVariableMapper>,
     ) {
         let mut view_model = MainViewModel::new(
-            &workflow,
+            &self.workflow,
             Control::new("Select up", Key::Char('k')),
             Control::new("Select down", Key::Char('j')),
         );
@@ -48,8 +49,8 @@ impl App {
         let mut main_state = MainState::new();
 
         while self.app_state.is_running() {
-            if let Some(key) = self.should_update(&workflow, &view_model, &main_state) {
-                self.update(&mut view_model, &mut main_state, &mut workflow, &key);
+            if let Some(key) = self.should_update(&view_model, &main_state) {
+                self.update(&mut view_model, &mut main_state, &key);
                 main_widget = MainWidget::new(&view_model)
             }
             _ = terminal.draw(|frame| self.draw(frame, &main_widget, &mut main_state));
@@ -62,7 +63,6 @@ impl App {
 
     fn should_update(
         &mut self,
-        workflow: &Workflow<ShCommandRunner, RegexVariableMapper>,
         view_model: &MainViewModel,
         state: &MainState,
     ) -> Option<Key> {
@@ -76,7 +76,7 @@ impl App {
                     return Some(self.quit_control.get_key());
                 }
 
-                if view_model.needs_update(state, &workflow, &key) {
+                if view_model.needs_update(state, &self.workflow, &key) {
                     return Some(key);
                 }
             }
@@ -88,14 +88,13 @@ impl App {
         &mut self,
         view_model: &mut MainViewModel,
         state: &mut MainState,
-        workflow: &mut Workflow<ShCommandRunner, RegexVariableMapper>,
         key: &Key,
     ) {
         if (*key == Key::Char('q')) {
             self.app_state.quit();
             return;
         }
-        view_model.update(state, workflow, &key);
+        view_model.update(state, &mut self.workflow, &key);
     }
 }
 

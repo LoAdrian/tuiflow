@@ -1,0 +1,31 @@
+app_title: dora the explorah
+controls:
+  selection_up:
+    name: selection up
+    key: !Char 'k'
+  selection_down:
+    name: selection down
+    key: !Char 'j'
+  quit:
+    name: quit
+    key: !Char 'q'
+  custom_controls:
+    moveback:
+      name: move back
+      key: !Char 'h'
+    moveinto:
+      name: move into
+      key: !Char 'l'
+initial_command: ls
+initial_state: show_files
+states:
+  show_files:
+    transitions:
+      - control_name: moveinto
+        selection_filter: (?<x>.*)
+        command_pattern: ls -d -1 "<x>/"**
+      - control_name: moveback
+        selection_filter: (?<x>.*)\/.*\/.*
+        command_pattern: ls -d -1 "<x>/"**
+    line_filter: (?<path>.+)
+    line_display_pattern: <path>

@@ -16,13 +16,12 @@ pub(crate) struct Workflow<R: CommandRunner, M: VariableMapper> {
 impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
     pub fn new(
         initializer_state: State<R, M>,
-        initial_selection: Line,
         app_title: String,
     ) -> Self {
 
         let mut initializer_state_mut = initializer_state;
         let init_control = initializer_state_mut.get_controls().pop().expect("Initializer state must contain at least one control");
-        let current_state = initializer_state_mut.transition(Some(initial_selection), &init_control.get_key())
+        let current_state = initializer_state_mut.transition(None, &init_control.get_key())
             .expect("Something went wrong during the intial transition");
         Self {
             current_state,
