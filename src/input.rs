@@ -1,6 +1,5 @@
 use crate::{model::control::Key, workflow::ShCommandRunner, RegexVariableMapper, Workflow};
 
-// TODO: Split into UpdateTrigger and InputUpdated
 pub(crate) trait InputUpdatedViewModel {
     type ViewState;
     fn needs_update(&self, state: &Self::ViewState, workflow: &Workflow<ShCommandRunner, RegexVariableMapper>, key: &Key) -> bool; //TODO Make more generic over R,M

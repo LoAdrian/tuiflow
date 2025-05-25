@@ -1,3 +1,6 @@
+use crate::app::configuration::{
+    AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration,
+};
 use crate::{
     input::InputUpdatedViewModel,
     model::{control::Key, Control},
@@ -5,13 +8,16 @@ use crate::{
     workflow::ShCommandRunner,
     RegexVariableMapper, Workflow,
 };
-use app_state::AppState;
+use state::AppState;
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use eyre::{Context, Result};
 use ratatui::{widgets::StatefulWidgetRef, DefaultTerminal, Frame};
+use std::collections::HashMap;
 use std::time::Duration;
 
-mod app_state;
+mod configuration;
+mod state;
+mod factory;
 
 // TODO: App is the actual entry point -> not the main function
 // App is also not the user interface
@@ -54,7 +60,12 @@ impl App {
         main_widget.render_ref(frame.area(), frame.buffer_mut(), state);
     }
 
-    fn should_update(&mut self, workflow: &Workflow<ShCommandRunner, RegexVariableMapper>, view_model: &MainViewModel, state: &MainState) -> Option<Key> {
+    fn should_update(
+        &mut self,
+        workflow: &Workflow<ShCommandRunner, RegexVariableMapper>,
+        view_model: &MainViewModel,
+        state: &MainState,
+    ) -> Option<Key> {
         if event::poll(Duration::from_millis(250))
             .context("failed to poll event")
             .unwrap()
@@ -73,7 +84,13 @@ impl App {
         None
     }
 
-    fn update(&mut self, view_model: &mut MainViewModel, state: &mut MainState, workflow: &mut Workflow<ShCommandRunner, RegexVariableMapper>, key: &Key) {
+    fn update(
+        &mut self,
+        view_model: &mut MainViewModel,
+        state: &mut MainState,
+        workflow: &mut Workflow<ShCommandRunner, RegexVariableMapper>,
+        key: &Key,
+    ) {
         if (*key == Key::Char('q')) {
             self.app_state.quit();
             return;
