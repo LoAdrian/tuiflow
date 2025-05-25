@@ -9,7 +9,7 @@ use ratatui::{
 
 use crate::{
     input::InputUpdatedViewModel,
-    model::{control::Key, Display, Line, TerminalFlow},
+    model::{control::Key, Display, TerminalFlow},
     workflow::ShCommandRunner,
     RegexVariableMapper, Workflow,
 };
@@ -78,6 +78,15 @@ impl BodyViewModel {
 
 impl InputUpdatedViewModel for BodyViewModel {
     type ViewState = BodyState;
+    fn needs_update(
+        &self,
+        _: &Self::ViewState,
+        _: &Workflow<ShCommandRunner, RegexVariableMapper>,
+        key: &Key,
+    ) -> bool {
+        *key == self.selection_down || *key == self.selection_up
+    }
+
     fn update(
         &mut self,
         state: &mut Self::ViewState,
@@ -90,16 +99,11 @@ impl InputUpdatedViewModel for BodyViewModel {
             state.move_selection_up();
         }
 
-        self.display = workflow.get_display().clone()
-    }
+        if *workflow.get_display() != self.display {
+            state.select_first();
+        }
 
-    fn needs_update(
-        &self,
-        _: &Self::ViewState,
-        _: &Workflow<ShCommandRunner, RegexVariableMapper>,
-        key: &Key,
-    ) -> bool {
-        *key == self.selection_down || *key == self.selection_up
+        self.display = workflow.get_display().clone()
     }
 }
 
@@ -126,6 +130,10 @@ impl BodyState {
         self.list_state.select(next_selection);
     }
 
+    pub fn select_first(&mut self) {
+        self.list_state.select(Some(0));
+    }
+    
     pub fn get_selected_line_index(&self) -> usize {
         self.list_state.selected().unwrap_or(0)
     }

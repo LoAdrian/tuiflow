@@ -1,9 +1,10 @@
 pub(crate) mod body;
-pub(crate) mod titlebar_widget;
+pub(crate) mod title_bar_widget;
 pub(crate) mod controls_widget;
 pub(crate) mod key_control_view_model;
 pub(crate) mod main_widget;
 
+// TODO: Use these to do update handling?
 pub(crate) trait DomainObserver {
     fn update(&mut self, property_name: &str);
 }
