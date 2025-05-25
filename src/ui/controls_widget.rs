@@ -1,30 +1,35 @@
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Stylize},
     widgets::{Block, BorderType, Borders, Paragraph, StatefulWidgetRef, WidgetRef},
 };
 
-use crate::State;
+use crate::{
+    input::InputUpdatedViewModel,
+    model::{Control, TerminalFlow},
+    workflow::{self, ShCommandRunner},
+    RegexVariableMapper, Workflow,
+};
 
 use super::key_control_view_model::KeyControlViewModel;
 
 #[derive(Clone)]
-pub struct ControlsWidget {
-    main_block: Block<'static>,
+pub(crate) struct ControlsWidget<'a> {
+    main_block: Block<'a>,
+    entries: Vec<Paragraph<'a>>,
 }
 
-impl ControlsWidget {
-    pub fn new(entries: Vec<KeyControlViewModel>) -> Self {
-
+impl<'a> ControlsWidget<'a> {
+    pub fn new(view_model: &ControlsViewModel) -> Self {
         Self {
             main_block: Block::new()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded),
-            entries: entries
+            entries: view_model
+                .entries
                 .iter()
                 .map(|entry| Paragraph::new(String::from(entry)))
-                .collect::<Vec<Paragraph<'_>>>()
+                .collect::<Vec<Paragraph<'a>>>(),
         }
     }
     pub fn get_legend_size(&self) -> usize {
@@ -32,11 +37,10 @@ impl ControlsWidget {
     }
 }
 
-pub const WIDGET_PADDING_VERTICAL: u16 = 2;
-impl StatefulWidgetRef for ControlsWidget {
-    type State = ControlsWidgetState;
-    // TODO: This is still very dynamic. Either i should make it more static by doing more inside the constructor or actually use the dynamicness and calculate the layout based on screen-size
-    fn render_ref(&self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+pub(crate) const WIDGET_PADDING_VERTICAL: u16 = 2;
+impl<'a> WidgetRef for ControlsWidget<'a> {
+    fn render_ref(&self, area: Rect, buf: &mut Buffer) {
+        self.main_block.render_ref(area, buf);
         let legend_size = self.get_legend_size();
         let column_count = if legend_size < 3 {
             legend_size as u32
@@ -61,33 +65,66 @@ impl StatefulWidgetRef for ControlsWidget {
                 .copied()
                 .collect::<Vec<_>>()
         });
-        self.main_block.render_ref(area, buf);
-
-        state.entries
+        self.entries
             .iter()
             .zip(fields)
             .for_each(|(entry, field): (&Paragraph<'_>, Rect)| entry.render_ref(field, buf));
     }
 }
 
-struct ControlsWidgetState<'a> {
-    entries: Vec<Paragraph<'a>>,
+pub(crate) struct ControlsViewModel {
+    entries: Vec<KeyControlViewModel>,
+    selection_up: Control,
+    selection_down: Control,
 }
 
-impl<'a> ControlsWidgetState<'a> {
-    pub fn new(entries: Vec<KeyControlViewModel>) -> Self {
-        Self {
-            entries: entries
-                .iter()
-                .map(|entry| Paragraph::new(String::from(entry)))
-                .collect::<Vec<Paragraph<'a>>>(),
-        }
+impl ControlsViewModel {
+    pub fn new(
+        workflow: &Workflow<ShCommandRunner, RegexVariableMapper>,
+        selection_up: Control,
+        selection_down: Control,
+    ) -> Self {
+        let mut entries: Vec<KeyControlViewModel> = workflow
+            .get_state_controls()
+            .into_iter()
+            .map(|control| KeyControlViewModel::new(control))
+            .collect();
+
+        entries.push(KeyControlViewModel::new(selection_up.clone()));
+        entries.push(KeyControlViewModel::new(selection_down.clone()));
+
+        Self { entries, selection_up, selection_down}
+    }
+}
+
+impl InputUpdatedViewModel for ControlsViewModel {
+    type ViewState = ();
+
+    fn needs_update(
+        &self,
+        _: &Self::ViewState,
+        _: &crate::Workflow<crate::workflow::ShCommandRunner, crate::RegexVariableMapper>,
+        _: &crate::model::control::Key,
+    ) -> bool {
+        false
     }
 
-    pub fn update(&mut self, entries: Vec<KeyControlViewModel>) {
-        self.entries = entries
-            .iter()
-            .map(|entry| Paragraph::new(String::from(entry)))
-            .collect::<Vec<Paragraph<'a>>>();
+    fn update(
+        &mut self,
+        _: &mut Self::ViewState,
+        workflow: &mut crate::Workflow<
+            crate::workflow::ShCommandRunner,
+            crate::RegexVariableMapper,
+        >,
+        _: &crate::model::control::Key,
+    ) {
+        self.entries = workflow
+            .get_state_controls()
+            .into_iter()
+            .map(|control| KeyControlViewModel::new(control))
+            .collect();
+
+        self.entries.push(KeyControlViewModel::new(self.selection_up.clone()));
+        self.entries.push(KeyControlViewModel::new(self.selection_down.clone()));
     }
 }

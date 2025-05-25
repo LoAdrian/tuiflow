@@ -21,13 +21,20 @@ pub fn main() -> Result<()> {
         .build();
     let initial_state_ref = Rc::new(RefCell::new(initial_state));
 
-    let transition = TransitionBuilder::new()
+    let move_into = TransitionBuilder::new()
         .with_control(Control::new("move into", Key::Char('l')))
         .with_selected_display_to_command(RegexVariableMapper::new("(?<x>.*)", "ls -d -1 \"<x>/\"**").expect("failed to create mapper"))
         .with_next_state(initial_state_ref.clone())
         .build();
 
-    initial_state_ref.borrow_mut().add_transition(Key::Char('l'), transition);
+    let move_back = TransitionBuilder::new()
+        .with_control(Control::new("move back", Key::Char('h')))
+        .with_selected_display_to_command(RegexVariableMapper::new("(?<x>.*)\\/.*\\/.*", "ls -d -1 \"<x>/\"**").expect("failed to create mapper"))
+        .with_next_state(initial_state_ref.clone())
+        .build();
+
+    initial_state_ref.borrow_mut().add_transition(Key::Char('l'), move_into);
+    initial_state_ref.borrow_mut().add_transition(Key::Char('h'), move_back);
 
     let initial_transition = TransitionBuilder::new()
         .with_control(Control::new("move into", Key::Char('l')))
@@ -38,7 +45,7 @@ pub fn main() -> Result<()> {
 
     let workflow = Workflow::<ShCommandRunner, RegexVariableMapper>::new(initializer_state, Line{0: "DOES NOT CARE".to_string() }, "file explorer".to_string());
 
-    App::new(workflow, vec![Control::new("into", Key::Char('l'))], Control::new("down", Key::Char('j')), Control::new("up", Key::Char('k'))).run(terminal)?;
+    App::new(Control::new("Quit", Key::Char('q'))).run(terminal, workflow);
     ratatui::restore();
     Ok(())
 }

@@ -1,24 +1,23 @@
-use std::{cell::RefCell, rc::Rc};
-
-use mockall::predicate::ne;
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 
-use super::{
-    control::Control,
-    state::State, workflow::CommandRunner, Line,
-};
+use super::{control::Control, state::State, workflow::CommandRunner, Line};
 
 pub(crate) mod builder;
 
 pub(crate) struct Transition<R: CommandRunner, M: VariableMapper> {
     control: Control,
-    next_state: Rc<RefCell<State<R, M>>>,    //TODO: Check and break cycles
-    selected_display_to_command: M, // regex extraction from selection
+    next_state: Rc<RefCell<State<R, M>>>, //TODO: Check and break cycles
+    selected_display_to_command: M,       // regex extraction from selection
 }
 
 impl<R: CommandRunner, M: VariableMapper> Transition<R, M> {
-    pub fn new(control: Control, next_state: Rc<RefCell<State<R, M>>>, selected_display_to_cmd: M) -> Self {
+    pub fn new(
+        control: Control,
+        next_state: Rc<RefCell<State<R, M>>>,
+        selected_display_to_cmd: M,
+    ) -> Self {
         Self {
             control,
             next_state,
@@ -28,12 +27,19 @@ impl<R: CommandRunner, M: VariableMapper> Transition<R, M> {
 
     pub fn get_transition_command(
         &self,
-        selected_line: &Line,
-    ) -> Result<String, VariableMappingError> {
-        self.selected_display_to_command
-            .map(&selected_line.0)
-            .nth(0)
-            .unwrap()
+        selected_line: Option<Line>,
+    ) -> Result<String, DisplayToCommandMappingError> {
+        let input = selected_line.map_or(String::new(), |l| l.0);
+        let result = self
+            .selected_display_to_command
+            .map(input.as_str())
+            .nth(0);
+
+        match result {
+            Some(Ok(command)) => Ok(command),
+            Some(Err(e)) => Err(DisplayToCommandMappingError::VariableMappingError(e)),
+            None => Err(DisplayToCommandMappingError::NoMatchFound),
+        }
     }
 
     pub fn get_activation_control(&self) -> &Control {
@@ -51,6 +57,25 @@ impl<R: CommandRunner, M: VariableMapper> Clone for Transition<R, M> {
             control: self.control.clone(),
             next_state: Rc::clone(&self.next_state),
             selected_display_to_command: self.selected_display_to_command.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum DisplayToCommandMappingError {
+    VariableMappingError(VariableMappingError),
+    NoMatchFound,
+}
+
+impl Display for DisplayToCommandMappingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DisplayToCommandMappingError::VariableMappingError(e) => {
+                write!(f, "Variable mapping error: {e}")
+            }
+            DisplayToCommandMappingError::NoMatchFound => {
+                write!(f, "No match found for the display selection")
+            }
         }
     }
 }

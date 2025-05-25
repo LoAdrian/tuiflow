@@ -1,5 +1,6 @@
+
 #[derive(Clone)]
-pub struct Display {
+pub struct Display { // Make this iterable
     pub lines: Vec<Line>,
 }
 
@@ -12,4 +13,4 @@ impl Default for Display {
 }
 
 #[derive(Clone)]
-pub struct Line(pub String);
+pub struct Line(pub String); // Make this Into<ListItem>

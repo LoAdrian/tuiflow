@@ -15,6 +15,7 @@ use error::StateTransitionError;
 pub trait TerminalFlow {
     fn run_control(&mut self, display_selection_index: usize, key: &Key) -> Result<(), StateTransitionError>;
     fn get_display<'a>(&'a self) -> Ref<'a, Display>;
-    fn get_step_title(&self) -> Ref<'_, str>;
+    fn get_state_title(&self) -> Ref<'_, str>;
     fn get_app_title(&self) -> &str;
+    fn get_state_controls<'a>(&'a self) -> Vec<Control>;
 }

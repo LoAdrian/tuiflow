@@ -1,4 +1,3 @@
-use mockall::automock;
 use std::{cell::{BorrowMutError, RefCell}, collections::HashMap, rc::Rc};
 
 use super::{
@@ -43,7 +42,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
 
     pub(crate) fn transition(
         &mut self,
-        display_selection: &Line,
+        display_selection: Option<Line>,
         key: &Key,
     ) -> Result<Rc<RefCell<State<R, M>>>, StateTransitionError> {
         if let Some(transition) = self.transitions.get(key) {
@@ -78,10 +77,10 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
         }
     }
 
-    pub(crate) fn get_controls(&self) -> Vec<Control> {
+    pub(crate) fn get_controls(&self) -> Vec<&Control> {
         self.transitions
             .values()
-            .map(|transition| transition.get_activation_control().clone())
+            .map(|transition| transition.get_activation_control())
             .collect()
     }
 

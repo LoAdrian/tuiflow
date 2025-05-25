@@ -3,7 +3,7 @@ use std::{cell::{Ref, RefCell}, process::Command, rc::Rc};
 use mockall::automock;
 
 use super::{
-    control::{Control, Key}, display::{self, Display}, error::StateTransitionError, state::State, transition::Transition, variable_mapping::VariableMapper, Line, TerminalFlow
+    control::{self, Control, Key}, display::{self, Display}, error::StateTransitionError, state::State, transition::Transition, variable_mapping::VariableMapper, Line, TerminalFlow
 };
 
 pub(crate) mod builder;
@@ -20,9 +20,9 @@ impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
         app_title: String,
     ) -> Self {
 
-        let init_control = initializer_state.get_controls().pop().expect("Initializer state must contain at least one control");
         let mut initializer_state_mut = initializer_state;
-        let current_state = initializer_state_mut.transition(&initial_selection, &init_control.get_key())
+        let init_control = initializer_state_mut.get_controls().pop().expect("Initializer state must contain at least one control");
+        let current_state = initializer_state_mut.transition(Some(initial_selection), &init_control.get_key())
             .expect("Something went wrong during the intial transition");
         Self {
             current_state,
@@ -37,7 +37,7 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
 
         let transition_result: Result<Rc<RefCell<State<R, M>>>, StateTransitionError>; 
         {
-            let selected_line: Line;
+            let selected_line: Option<Line>;
 
             { // scoped RefCell borrow
                 // TODO move all this to state
@@ -46,13 +46,12 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
                 selected_line = display
                     .lines
                     .get(display_selection_index)
-                    .expect("Invalid display selection index")
-                    .clone(); // double borrow if we don't do this // TODO: eliminate this smell
+                    .map(|l| l.clone()); // double borrow if we don't do this // TODO: eliminate this smell
             }
 
         
             transition_result = self.current_state.borrow_mut()
-                .transition(&selected_line, key);
+                .transition(selected_line, key);
         }
 
         match transition_result {
@@ -68,12 +67,22 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
         Ref::map(self.current_state.borrow(), |x| x.get_display())
     }
 
-    fn get_step_title<'a>(&'a self) -> Ref<'_, str> {
+    fn get_state_title<'a>(&'a self) -> Ref<'a, str> {
         Ref::map(self.current_state.borrow(), |s| s.get_name())
     }
 
     fn get_app_title<'a>(&'a self) -> &str {
         &self.app_title
+    }
+
+    fn get_state_controls<'a>(&'a self) -> Vec<Control>{
+        let current_state: Ref<'a, State<R,M>> = self.current_state.borrow();
+        current_state.get_controls()
+            .into_iter()
+            .map(|c| {
+                c.clone()
+            })
+            .collect()
     }
 }
 

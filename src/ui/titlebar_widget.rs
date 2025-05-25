@@ -1,36 +1,37 @@
+
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, text::Text, widgets::{Block, Borders, Paragraph, Widget, WidgetRef}};
 
-#[derive(Clone)]
-pub struct TitleBarWidget {
-    app_title: Paragraph<'static>,
-    state_title: Paragraph<'static>,
-    logo: Paragraph<'static>,
-}
+use crate::{input::InputUpdatedViewModel, model::TerminalFlow, workflow::{self, ShCommandRunner}, RegexVariableMapper, Workflow};
 
-impl TitleBarWidget {
-    pub fn new(app_title: String, state_title: String) -> Self {
-        let logo_str = 
-" 
- _____  __  __  __  ____  __     ______  __    __
+#[derive(Clone)]
+pub struct TitleBarWidget<'a> {
+    app_title: Paragraph<'a>,
+    state_title: Paragraph<'a>,
+    logo: Paragraph<'a>,
+}
+const LOGO_STR: &str = 
+" _____  __  __  __  ____  __     ______  __    __
 /_  _/ / / / / / / / __/ / /    / __  / / /_  / /
  / /  / /_/ / / / / __/ / /__  / /_/ / / // |/ / 
-/_/  /_____/ /_/ /_/   /____/ /_____/ /___/|__/  ".trim_start();
+/_/  /_____/ /_/ /_/   /____/ /_____/ /___/|__/  ";
 
-        let logo = Paragraph::new(logo_str)
+impl<'a> TitleBarWidget<'a> {
+    pub fn new(view_model: &'a TitleBarViewModel) -> Self {
+        let logo = Paragraph::new(LOGO_STR)
             .style(Style::default()
                 .fg(Color::Cyan))
             .alignment(ratatui::layout::Alignment::Right);
 
         Self { 
-            app_title: Paragraph::new(app_title)
+            app_title: Paragraph::new(view_model.app_title.as_str())
                 .bold(),
-            state_title: Paragraph::new(state_title),
+            state_title: Paragraph::new(view_model.state_title.as_str()),
             logo
         }
     }
 }
 
-impl WidgetRef for TitleBarWidget {
+impl<'a> WidgetRef for TitleBarWidget<'a> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
 
         let horizontal_layout = Layout::horizontal([
@@ -44,17 +45,41 @@ impl WidgetRef for TitleBarWidget {
         ]);
         let [app_area, logo_area] = horizontal_layout.areas(area);
 
-        /*let block = Block::new()
-            .borders(Borders::ALL)
-            .border_type(ratatui::widgets::BorderType::Rounded);
-        let block_content = block.inner(area);
-        block.render(app_area, buf);*/
-
         let [app_title_area, state_title_area] = vertical_layout.areas(app_area);
 
         self.app_title.render_ref(app_title_area, buf);
         self.state_title.render_ref(state_title_area, buf);
         self.logo.render_ref(logo_area, buf);
 
+    }
+}
+
+pub(crate) struct TitleBarViewModel {
+    app_title: String,
+    state_title: String,
+}
+
+impl <'a> TitleBarViewModel {
+    pub fn new(workflow: &Workflow<ShCommandRunner, RegexVariableMapper>) -> Self {
+        Self {
+            app_title: workflow.get_app_title().to_string(),
+            state_title: workflow.get_state_title().to_string(),
+        }
+    }
+    
+}
+
+impl InputUpdatedViewModel for TitleBarViewModel {
+    type ViewState = ();
+
+    fn needs_update(&self, _: &Self::ViewState, _: &crate::Workflow<crate::workflow::ShCommandRunner, crate::RegexVariableMapper>, _: &crate::model::control::Key) -> bool {
+        false
+    }
+
+    fn update(&mut self, _: &mut Self::ViewState, workflow: &mut crate::Workflow<crate::workflow::ShCommandRunner, crate::RegexVariableMapper>, _: &crate::model::control::Key) {
+        let current_state_title = workflow.get_state_title();
+        if (self.state_title != *current_state_title) {
+            self.state_title = current_state_title.to_string()
+        }
     }
 }
