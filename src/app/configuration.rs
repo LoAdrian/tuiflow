@@ -10,29 +10,29 @@ pub(crate) struct AppConfiguration {
     pub initial_command: String,
     pub initial_state: String,
     pub states: HashMap<String, StateConfiguration>,
-
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub(crate) struct StateConfiguration {
-    pub  transitions: Vec<TransitionConfiguration>,
+    pub transitions: Vec<TransitionConfiguration>,
     pub line_filter: String,
     pub line_display_pattern: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub(crate) struct TransitionConfiguration {
-    pub  control_name: String,
-    pub  selection_filter: String,
-    pub  command_pattern: String,
+    pub control_name: String,
+    pub selection_filter: String,
+    pub command_pattern: String,
+    pub next_state: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub(crate) struct ControlsConfiguration {
-    pub  selection_up: Control,
-    pub  selection_down: Control,
-    pub  quit: Control,
-    pub  custom_controls: HashMap<String, Control>,
+    pub selection_up: Control,
+    pub selection_down: Control,
+    pub quit: Control,
+    pub custom_controls: HashMap<String, Control>,
 }
 
 impl Default for ControlsConfiguration {
@@ -46,10 +46,11 @@ impl Default for ControlsConfiguration {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::app::configuration::{AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration};
+    use crate::app::configuration::{
+        AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration,
+    };
     use crate::model::control::Key;
     use crate::model::Control;
     use std::collections::HashMap;
@@ -80,9 +81,11 @@ states:
     - control_name: moveinto
       selection_filter: (?<x>.*)
       command_pattern: ls -d -1 "<x>/"**
+      next_state: show_files
     - control_name: moveback
       selection_filter: (?<x>.*)\/.*\/.*
       command_pattern: ls -d -1 "<x>/"**
+      next_state: show_files
     line_filter: (?<path>.+)
     line_display_pattern: <path>
 "#;
@@ -110,16 +113,20 @@ states:
                 StateConfiguration {
                     line_filter: "(?<path>.+)".to_string(),
                     line_display_pattern: "<path>".to_string(),
-                    transitions: vec![TransitionConfiguration {
-                        control_name: "moveinto".to_string(),
-                        selection_filter: "(?<x>.*)".to_string(),
-                        command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
-                    },
-                                      TransitionConfiguration {
-                                          control_name: "moveback".to_string(),
-                                          selection_filter: "(?<x>.*)\\/.*\\/.*".to_string(),
-                                          command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
-                                      }],
+                    transitions: vec![
+                        TransitionConfiguration {
+                            control_name: "moveinto".to_string(),
+                            selection_filter: "(?<x>.*)".to_string(),
+                            command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
+                            next_state: "show_files".to_string(),
+                        },
+                        TransitionConfiguration {
+                            control_name: "moveback".to_string(),
+                            selection_filter: "(?<x>.*)\\/.*\\/.*".to_string(),
+                            command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
+                            next_state: "show_files".to_string(),
+                        },
+                    ],
                 },
             )]),
         };
@@ -152,20 +159,25 @@ states:
                 StateConfiguration {
                     line_filter: "(?<path>.+)".to_string(),
                     line_display_pattern: "<path>".to_string(),
-                    transitions: vec![TransitionConfiguration {
-                        control_name: "moveinto".to_string(),
-                        selection_filter: "(?<x>.*)".to_string(),
-                        command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
-                    },
-                                      TransitionConfiguration {
-                                          control_name: "moveback".to_string(),
-                                          selection_filter: "(?<x>.*)\\/.*\\/.*".to_string(),
-                                          command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
-                                      }],
+                    transitions: vec![
+                        TransitionConfiguration {
+                            control_name: "moveinto".to_string(),
+                            selection_filter: "(?<x>.*)".to_string(),
+                            command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
+                            next_state: "show_files".to_string(),
+                        },
+                        TransitionConfiguration {
+                            control_name: "moveback".to_string(),
+                            selection_filter: "(?<x>.*)\\/.*\\/.*".to_string(),
+                            command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
+                            next_state: "show_files".to_string(),
+                        },
+                    ],
                 },
             )]),
         };
-        let actual_result: Result<AppConfiguration, _> = serde_yaml::from_str(SERIALIZED_CONFIGURATION);
+        let actual_result: Result<AppConfiguration, _> =
+            serde_yaml::from_str(SERIALIZED_CONFIGURATION);
         assert!(actual_result.is_ok());
         assert_eq!(actual_result.unwrap(), expected_config);
     }

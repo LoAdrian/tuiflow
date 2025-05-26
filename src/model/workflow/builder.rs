@@ -27,7 +27,7 @@ impl<'a, C: CommandRunner + Clone, M: VariableMapper> WorkflowBuilder<'a, C, M> 
         self.initial_display_to_command_mapper = Some(mapper);
         self
     }
-    
+
     pub fn with_command_runner(&mut self, command_runner: C) -> &mut Self {
         self.command_runner = Some(command_runner);
         self
