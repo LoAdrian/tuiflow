@@ -20,3 +20,23 @@ The displays always show some amount of lines where one line is always selected.
 
 Each transition  maps the selected line on the display to a cli-command. Every such *mapping* consists of a regex matching some input and an output pattern that uses the group-names of the regex.  
 Each state also maps the results of the cli-command delimited by newlines to the new lines to be displayed in the same way as the transitions map lines to commands.
+
+## YAML file structure:
+
+### Possible Keys:
+- !Char <char>
+- !Enter,
+- !Backspace,
+- !Tab,
+- !Esc,
+- !Up,
+- !Down,
+- !Left,
+- !Right,
+- !Home,
+- !End,
+- !PageUp,
+- !PageDown,
+- !Delete,
+- !Insert,
+- !F <u8>,
