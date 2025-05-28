@@ -1,9 +1,9 @@
-use std::{any::type_name, str::FromStr};
+use std::str::FromStr;
 
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use syn::{Field, FnArg, Generics, Ident, ImplItem, ImplItemFn, ItemImpl, ItemStruct, Pat, ReturnType, Type, TypeParam, Visibility};
 use quote::{format_ident, quote, ToTokens};
+use syn::{Field, FnArg, Generics, Ident, ImplItem, ImplItemFn, ItemImpl, ItemStruct, Pat, ReturnType, Type, Visibility};
 
 pub fn buildable_impl(item: TokenStream) -> TokenStream {
     let parsed_item = syn::parse::<ItemStruct>(item.clone()); // TODO: Mitigate this clone
@@ -21,9 +21,9 @@ pub fn buildable_impl(item: TokenStream) -> TokenStream {
 
 fn get_builder_from_struct(input_struct: ItemStruct) -> TokenStream {
     let ItemStruct {
-        attrs,
+        attrs: _attrs,
         vis,
-        struct_token,
+        struct_token: _struct_token,
         ident,
         generics,
         fields,
@@ -43,20 +43,20 @@ fn get_builder_from_struct(input_struct: ItemStruct) -> TokenStream {
     }).collect::<Vec<(Ident, Type)>>();
     let mut result = quote!(#input_struct);
     result.extend(get_builder_from_names_and_types(ident.clone(), None, quote!{#ident}, field_names_and_types, generics, vis));
-    return result.into();
+    result.into()
 }
 
 // TODO: Make the builder visibility the same as the target struct, not instead of the visiblitity of the builders methods
 fn get_builder_from_fn(item_impl: ItemImpl) -> TokenStream {
     let ItemImpl {
-        attrs,
-        defaultness,
-        unsafety,
-        impl_token,
+        attrs: _attrs,
+        defaultness: _defaultness,
+        unsafety: _unsafety,
+        impl_token: _impl_token,
         generics,
-        trait_,
+        trait_: _trait_,
         self_ty,
-        brace_token,
+        brace_token: _brace_token,
         items,
     } = item_impl.clone();
     let constructor = items.iter().find_map(|item| {
@@ -78,11 +78,11 @@ fn get_builder_from_fn(item_impl: ItemImpl) -> TokenStream {
     });
     
     let ImplItemFn {
-        attrs,
+        attrs: _attrs,
         vis,
-        defaultness,
+        defaultness: _defaultness,
         sig,
-        block,
+        block: _block,
     } = constructor.expect("Failed to find constructor function in input impl block.");
     
     let names_and_types = sig.inputs.iter().map(|arg| {
@@ -95,7 +95,7 @@ fn get_builder_from_fn(item_impl: ItemImpl) -> TokenStream {
         panic!("Failed to parse input function arguments.");
     }).collect::<Vec<(Ident, Type)>>();
     let mut result = quote!(#item_impl);
-    if let syn::Type::Path(ref type_path) = *self_ty { 
+    if let Type::Path(ref type_path) = *self_ty { 
         let type_name= type_path.path.segments.last().expect("Failed to parse input function type path").ident.clone();
         let return_type = if let ReturnType::Type(_, ref ty) = sig.output { 
             
@@ -113,7 +113,7 @@ fn get_builder_from_fn(item_impl: ItemImpl) -> TokenStream {
     } else {
         panic!("Failed to parse input function self type.");
     }
-    return result.into();
+    result.into()
 }
 
 fn get_builder_from_names_and_types(struct_identifier: Ident, constructor_identifier: Option<Ident>, builder_return_type: proc_macro2::TokenStream, fields: Vec<(Ident, Type)>, generics: Generics, builder_visibility: Visibility) -> proc_macro2::TokenStream {
@@ -214,7 +214,7 @@ fn extend_field_setter_fn(field_setters: &mut proc_macro2::TokenStream, field_id
 }
 
 fn extend_optional_initializer(optional_initializers: &mut proc_macro2::TokenStream, field_identifier: &Ident, field_type: &Type) {
-    if let syn::Type::Path(type_path) = field_type {
+    if let Type::Path(type_path) = field_type {
         let type_ident = type_path.path.segments.first().unwrap().ident.clone();
         if type_ident == format_ident!("Option") {
             optional_initializers.extend(quote!(
