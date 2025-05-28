@@ -12,7 +12,7 @@ impl<'a> Control {
     pub fn new(name: &str, key: Key) -> Self {
         Self {
             name: String::from(name),
-            key: key,
+            key,
         }
     }
 

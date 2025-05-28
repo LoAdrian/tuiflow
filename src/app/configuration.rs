@@ -91,45 +91,7 @@ states:
 "#;
     #[test]
     fn serialization_serializes_as_expected() {
-        let config = AppConfiguration {
-            app_title: "dora the explorah".to_string(),
-            controls: ControlsConfiguration {
-                custom_controls: HashMap::from([
-                    (
-                        "moveback".to_string(),
-                        Control::new("move back", Key::Char('h')),
-                    ),
-                    (
-                        "moveinto".to_string(),
-                        Control::new("move into", Key::Char('l')),
-                    ),
-                ]),
-                ..Default::default()
-            },
-            initial_command: "ls".to_string(),
-            initial_state: "show_files".to_string(),
-            states: HashMap::from([(
-                "show_files".to_string(),
-                StateConfiguration {
-                    line_filter: "(?<path>.+)".to_string(),
-                    line_display_pattern: "<path>".to_string(),
-                    transitions: vec![
-                        TransitionConfiguration {
-                            control_name: "moveinto".to_string(),
-                            selection_filter: "(?<x>.*)".to_string(),
-                            command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
-                            next_state: "show_files".to_string(),
-                        },
-                        TransitionConfiguration {
-                            control_name: "moveback".to_string(),
-                            selection_filter: "(?<x>.*)\\/.*\\/.*".to_string(),
-                            command_pattern: "ls -d -1 \"<x>/\"**".to_string(),
-                            next_state: "show_files".to_string(),
-                        },
-                    ],
-                },
-            )]),
-        };
+        let config = get_example_config();
         let serialization_result = serde_yaml::to_string(&config);
         assert!(serialization_result.is_ok());
         assert_eq!(serialization_result.unwrap(), SERIALIZED_CONFIGURATION);
@@ -137,7 +99,15 @@ states:
 
     #[test]
     fn deserialization_deserializes_as_expected() {
-        let expected_config = AppConfiguration {
+        let expected_config = get_example_config();
+        let actual_result: Result<AppConfiguration, _> =
+            serde_yaml::from_str(SERIALIZED_CONFIGURATION);
+        assert!(actual_result.is_ok());
+        assert_eq!(actual_result.unwrap(), expected_config);
+    }
+    
+    fn get_example_config() -> AppConfiguration {
+        AppConfiguration {
             app_title: "dora the explorah".to_string(),
             controls: ControlsConfiguration {
                 custom_controls: HashMap::from([
@@ -175,10 +145,6 @@ states:
                     ],
                 },
             )]),
-        };
-        let actual_result: Result<AppConfiguration, _> =
-            serde_yaml::from_str(SERIALIZED_CONFIGURATION);
-        assert!(actual_result.is_ok());
-        assert_eq!(actual_result.unwrap(), expected_config);
+        }
     }
 }

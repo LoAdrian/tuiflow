@@ -17,7 +17,7 @@ impl AppState {
         }
     }
 
-    fn update(&mut self, key: Key) {
+    pub fn update(&mut self, key: Key) {
         match key {
             Key::Char('q') => self.quit(),
             _ => (),

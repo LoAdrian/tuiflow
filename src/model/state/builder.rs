@@ -1,12 +1,8 @@
-use std::rc::Rc;
-
 use crate::{model::{
     state::State,
     transition::Transition,
-    variable_mapping::VariableMapper, Display,
+    variable_mapping::VariableMapper,
 }, workflow::CommandRunner};
-
-use crate::model::transition::builder::TransitionBuilder;
 
 #[derive(Clone)]
 pub struct StateBuilder<R: CommandRunner + Clone, M: VariableMapper> {
@@ -43,24 +39,6 @@ impl<R: CommandRunner + Clone, M: VariableMapper> StateBuilder<R, M> {
     ) -> &mut Self {
         self.command_output_to_display_mapper = Some(command_output_to_display_mapper);
         self
-    }
-
-    pub fn with_transitions(&mut self, transitions: Vec<Transition<R, M>>) -> &mut Self {
-        self.transitions = transitions;
-        self
-    }
-
-    pub fn add_transition(&mut self, transition: Transition<R, M>) -> &mut Self {
-        self.transitions.push(transition);
-        self
-    }
-
-    pub fn build_and_add_transition(
-        &mut self,
-        f: impl FnOnce(TransitionBuilder<R, M>) -> Transition<R, M>,
-    ) -> &mut Self {
-        let transition = f(TransitionBuilder::<R, M>::default());
-        self.add_transition(transition)
     }
 
     pub fn with_command_runner(&mut self, command_runner: R) -> &mut Self {

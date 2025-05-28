@@ -72,9 +72,7 @@ impl App {
         {
             if let Event::Key(key_event) = event::read().context("failed to read event").unwrap() {
                 let key = key_event_to_key(&key_event).unwrap();
-                if key == self.quit_control.get_key() {
-                    return Some(self.quit_control.get_key());
-                }
+                self.app_state.update(key.clone());
 
                 if view_model.needs_update(state, &self.workflow, &key) {
                     return Some(key);
@@ -90,7 +88,7 @@ impl App {
         state: &mut MainState,
         key: &Key,
     ) {
-        if (*key == Key::Char('q')) {
+        if *key == self.quit_control.get_key() {
             self.app_state.quit();
             return;
         }

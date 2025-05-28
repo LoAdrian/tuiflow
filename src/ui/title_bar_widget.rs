@@ -1,7 +1,6 @@
+use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
 
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, text::Text, widgets::{Block, Borders, Paragraph, Widget, WidgetRef}};
-
-use crate::{input::InputUpdatedViewModel, model::TerminalFlow, workflow::{self, ShCommandRunner}, RegexVariableMapper, Workflow};
+use crate::{input::InputUpdatedViewModel, model::TerminalFlow, workflow::ShCommandRunner, RegexVariableMapper, Workflow};
 
 #[derive(Clone)]
 pub struct TitleBarWidget<'a> {
@@ -72,13 +71,13 @@ impl <'a> TitleBarViewModel {
 impl InputUpdatedViewModel for TitleBarViewModel {
     type ViewState = ();
 
-    fn needs_update(&self, _: &Self::ViewState, _: &crate::Workflow<crate::workflow::ShCommandRunner, crate::RegexVariableMapper>, _: &crate::model::control::Key) -> bool {
+    fn needs_update(&self, _: &Self::ViewState, _: &Workflow<ShCommandRunner, RegexVariableMapper>, _: &crate::model::control::Key) -> bool {
         false
     }
 
-    fn update(&mut self, _: &mut Self::ViewState, workflow: &mut crate::Workflow<crate::workflow::ShCommandRunner, crate::RegexVariableMapper>, _: &crate::model::control::Key) {
+    fn update(&mut self, _: &mut Self::ViewState, workflow: &mut Workflow<ShCommandRunner, RegexVariableMapper>, _: &crate::model::control::Key) {
         let current_state_title = workflow.get_state_title();
-        if (self.state_title != *current_state_title) {
+        if self.state_title != *current_state_title {
             self.state_title = current_state_title.to_string()
         }
     }

@@ -1,4 +1,4 @@
-use crate::{input::InputUpdatedViewModel, model::Control};
+use crate::model::Control;
 
 // TODO: At some point implement key-combinations instead of single-key controls
 #[derive(Clone)]

@@ -51,7 +51,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
                 let cli_result = self.command_runner.run_command(&command_to_execute);
                 if let Ok(cli_output) = cli_result {
                     let next_state = transition.get_next_state();
-                    next_state.try_borrow_mut() //TODO: fix this hack
+                    _ = next_state.try_borrow_mut() //TODO: fix this hack
                         .and_then(|mut next_state| {
                             next_state.display(&cli_output);
                             Ok(())
@@ -88,7 +88,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
         self.transitions.insert(key, transition);
     }
 
-    pub(crate) fn get_name<'a>(&'a self) -> &'a str {
+    pub(crate) fn get_name(&self) -> &str {
         &self.display_name
     }
 
@@ -101,7 +101,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
         for line_result in self.command_output_to_display.map(command_output) {
             match line_result {
                 Ok(line) => lines.push(Line(line)),
-                Err(e) => (),
+                Err(_e) => (),
             }
         }
 

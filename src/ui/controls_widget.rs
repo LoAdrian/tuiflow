@@ -1,13 +1,13 @@
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
-    widgets::{Block, BorderType, Borders, Paragraph, StatefulWidgetRef, WidgetRef},
+    widgets::{Block, BorderType, Borders, Paragraph, WidgetRef},
 };
 
 use crate::{
     input::InputUpdatedViewModel,
     model::{Control, TerminalFlow},
-    workflow::{self, ShCommandRunner},
+    workflow::ShCommandRunner,
     RegexVariableMapper, Workflow,
 };
 
@@ -103,7 +103,7 @@ impl InputUpdatedViewModel for ControlsViewModel {
     fn needs_update(
         &self,
         _: &Self::ViewState,
-        _: &crate::Workflow<crate::workflow::ShCommandRunner, crate::RegexVariableMapper>,
+        _: &Workflow<ShCommandRunner, RegexVariableMapper>,
         _: &crate::model::control::Key,
     ) -> bool {
         false
@@ -112,9 +112,9 @@ impl InputUpdatedViewModel for ControlsViewModel {
     fn update(
         &mut self,
         _: &mut Self::ViewState,
-        workflow: &mut crate::Workflow<
-            crate::workflow::ShCommandRunner,
-            crate::RegexVariableMapper,
+        workflow: &mut Workflow<
+            ShCommandRunner,
+            RegexVariableMapper,
         >,
         _: &crate::model::control::Key,
     ) {

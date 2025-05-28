@@ -1,9 +1,9 @@
-use std::{cell::RefCell, env, rc::Rc};
-use std::fs::File;
+use crate::app::configuration::AppConfiguration;
 use app::App;
 use eyre::Result;
-use model::{control::Key, state::{builder::StateBuilder, State}, transition::builder::TransitionBuilder, variable_mapping::{RegexVariableMapper, VariableMapper}, workflow::{self, CommandRunner, ShCommandRunner, Workflow}, Control, Line};
-use crate::app::configuration::AppConfiguration;
+use model::{variable_mapping::{RegexVariableMapper}, workflow::{self, Workflow}};
+use std::fs::File;
+use std::env;
 
 mod model;
 mod app;
