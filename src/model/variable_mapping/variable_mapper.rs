@@ -14,18 +14,19 @@ impl RegexVariableMapper {
         output_format: &str,
     ) -> Result<Self, VariableMapperCompilationError> {
         let input_filter = Regex::new(input_filter_regex);
-        if input_filter.is_err() {
-            return Err(VariableMapperCompilationError);
+        match input_filter {
+            Ok(regex) => Ok(Self {
+                input_filter: regex,
+                output_format: String::from(output_format),
+            }),
+            Err(e) => Err(VariableMapperCompilationError(e)),
         }
-        Ok(Self {
-            input_filter: input_filter.unwrap(),
-            output_format: String::from(output_format),
-        })
     }
 
     pub fn identity() -> Self {
         Self {
-            input_filter: Regex::new("(?<input>.*)").unwrap(),
+            input_filter: Regex::new("(?<input>.*)")
+                .expect("Failed to compile identity regex. Please contact a developer."),
             output_format: String::from("<input>"),
         }
     }
@@ -57,7 +58,7 @@ impl VariableMapper for RegexVariableMapper {
             .collect::<Vec<_>>();
         iter.into_iter()
     }
-    
+
     fn identity() -> Self {
         Self::new("(?<input>.*)", "<input>").unwrap_or_else(|_| Self::identity())
     }

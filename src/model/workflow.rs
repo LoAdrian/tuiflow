@@ -50,12 +50,15 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
         {
             let selected_line: Option<Line>;
 
-            // TODO move all this to state
-            let display = self.get_display();
-            selected_line = display
-                .lines
-                .get(display_selection_index)
-                .map(|l| l.clone()); // double borrow if we don't do this // TODO: eliminate this smell
+            {
+                //Scope RefCell borrow
+                // TODO move all this to state
+                let display = self.get_display();
+                selected_line = display
+                    .lines
+                    .get(display_selection_index)
+                    .map(|l| l.clone()); // double borrow if we don't do this // TODO: eliminate this smell
+            }
 
             transition_result = self
                 .current_state

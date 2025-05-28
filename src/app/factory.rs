@@ -2,9 +2,10 @@ use crate::app::configuration::AppConfiguration;
 use crate::model::state::builder::StateBuilder;
 use crate::model::state::State;
 use crate::model::transition::builder::TransitionBuilder;
-use crate::model::variable_mapping::RegexVariableMapper;
+use crate::model::variable_mapping::{RegexVariableMapper, VariableMapperCompilationError};
 use crate::model::workflow::builder::WorkflowBuilder;
 use crate::model::workflow::{ShCommandRunner, Workflow};
+use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -13,66 +14,92 @@ pub(crate) struct WorkflowFactory {}
 
 impl WorkflowFactory {
     pub fn build_from_configuration(
-        config: AppConfiguration,
-    ) -> Workflow<ShCommandRunner, RegexVariableMapper> {
-        let states: HashMap<String, Rc<RefCell<State<ShCommandRunner, RegexVariableMapper>>>> =
-            config
+        app_config: AppConfiguration,
+    ) -> eyre::Result<Workflow<ShCommandRunner, RegexVariableMapper>> {
+        let states: Result<HashMap<String, Rc<RefCell<State<ShCommandRunner, RegexVariableMapper>>>>,VariableMapperCompilationError> =
+            app_config
                 .states
                 .iter()
                 .map(|(name, config)| {
-                    (
-                        name.clone(),
-                        Rc::new(RefCell::new(
-                            StateBuilder::new()
-                                .with_command_output_to_display_mapper(
-                                    RegexVariableMapper::new(
-                                        config.line_filter.as_str(),
-                                        config.line_display_pattern.as_str(),
-                                    )
-                                    .unwrap(), //TODO: handle unwraps better
-                                )
-                                .with_display_name(name.clone())
-                                .with_command_runner(ShCommandRunner)
-                                .build(),
-                        )),
-                    )
+                        Self::build_state(
+                            config.line_filter.as_str(),
+                            config.line_display_pattern.as_str(),
+                            name,
+                        ).map(|state| (name.clone(), state))
                 })
                 .collect();
+        
+        let states_unwrapped = states?;
+        
+        for (name, state) in states_unwrapped.iter() {
+            let state_config = app_config.states.get(name).unwrap(); //safe unwrap
+            for transition_config in &state_config.transitions {
+                let transition_control = app_config
+                    .controls
+                    .custom_controls
+                    .get(&transition_config.control_name)
+                    .ok_or_eyre(format!(
+                        "Control {} named in transition config not found",
+                        transition_config.control_name
+                    ))?;
 
-        for (name, state) in states.iter() {
-            config
-                .states
-                .get(name)
-                .unwrap()
-                .transitions
-                .iter()
-                .for_each(|transition_config| {
-                    let control = config
-                        .controls
-                        .custom_controls
-                        .get(transition_config.control_name.as_str())
-                        .unwrap(); // TODO
-                    state.borrow_mut().add_transition(
-                        control.get_key(),
-                        TransitionBuilder::new()
-                            .with_control(control.clone())
-                            .with_next_state(
-                                states
-                                    .get(transition_config.next_state.as_str())
-                                    .unwrap()
-                                    .clone(),
+                state.borrow_mut().add_transition(
+                    transition_control.get_key(),
+                    TransitionBuilder::new()
+                        .with_control(transition_control.clone())
+                        .with_next_state(
+                            states_unwrapped
+                                .get(transition_config.next_state.as_str())
+                                .unwrap() //TODO
+                                .clone(),
+                        )
+                        .with_selected_display_to_command(
+                            RegexVariableMapper::new(
+                                transition_config.selection_filter.as_str(),
+                                transition_config.command_pattern.as_str(),
                             )
-                            .with_selected_display_to_command(RegexVariableMapper::new(transition_config.selection_filter.as_str(), transition_config.command_pattern.as_str()).unwrap())
-                            .build(),
-                    )
-                });
+                                .unwrap(), //TODO
+                        )
+                        .build(),
+                );
+            }
         }
 
-        WorkflowBuilder::new()
+        let initial_state = states_unwrapped
+            .get(app_config.initial_state.as_str())
+            .ok_or_eyre(format!(
+                "Initial state {} named in flow file not found in configuration",
+                app_config.initial_state
+            ))?
+            .clone();
+        
+        let initial_command_mapper = RegexVariableMapper::new(
+            "",
+            app_config.initial_command.as_str(),
+        )?;
+        
+        Ok(WorkflowBuilder::new()
             .with_command_runner(ShCommandRunner)
-            .with_initial_state(states.get(config.initial_state.as_str()).unwrap())
-            .with_app_title(config.app_title.as_str())
-            .with_initial_display_to_command_mapper(RegexVariableMapper::new("", config.initial_command.as_str()).unwrap())
-            .build()
+            .with_initial_state(&initial_state)
+            .with_app_title(app_config.app_title.as_str())
+            .with_initial_display_to_command_mapper(
+                initial_command_mapper,
+            )
+            .build())
+    }
+
+    fn build_state(
+        line_filter: &str,
+        line_display_pattern: &str,
+        name: &str,
+    ) -> Result<Rc<RefCell<State<ShCommandRunner, RegexVariableMapper>>>, VariableMapperCompilationError> {
+        let variable_mapper = RegexVariableMapper::new(line_filter, line_display_pattern)?;
+        Ok(Rc::new(RefCell::new(
+            StateBuilder::new()
+                .with_command_output_to_display_mapper(variable_mapper)
+                .with_display_name(name.to_string())
+                .with_command_runner(ShCommandRunner)
+                .build(),
+        )))
     }
 }

@@ -8,14 +8,15 @@ use crate::{
     RegexVariableMapper, Workflow,
 };
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use eyre::{Context, Result};
 use ratatui::{widgets::StatefulWidgetRef, DefaultTerminal, Frame};
 use state::AppState;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
 pub(crate) mod configuration;
-mod state;
 mod factory;
+mod state;
 
 // TODO: App is the actual entry point -> not the main function
 // App is also not the user interface
@@ -26,20 +27,17 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(configuration: AppConfiguration) -> Self {
+    pub fn new(configuration: AppConfiguration) -> eyre::Result<Self> {
         let quit_control = configuration.controls.quit.clone();
-        Self {
+        let workflow = WorkflowFactory::build_from_configuration(configuration)?;
+        Ok(Self {
             app_state: AppState::Running,
-            workflow: WorkflowFactory::build_from_configuration(configuration),
+            workflow,
             quit_control,
-            
-        }
+        })
     }
 
-    pub fn run(
-        mut self,
-        mut terminal: DefaultTerminal,
-    ) {
+    pub fn run(mut self, mut terminal: DefaultTerminal) -> eyre::Result<()> {
         let mut view_model = MainViewModel::new(
             &self.workflow,
             Control::new("Select up", Key::Char('k')),
@@ -49,12 +47,13 @@ impl App {
         let mut main_state = MainState::new();
 
         while self.app_state.is_running() {
-            if let Some(key) = self.should_update(&view_model, &main_state) {
+            if let Some(key) = self.should_update(&view_model, &main_state)? {
                 self.update(&mut view_model, &mut main_state, &key);
                 main_widget = MainWidget::new(&view_model)
             }
             _ = terminal.draw(|frame| self.draw(frame, &main_widget, &mut main_state));
         }
+        Ok(())
     }
 
     fn draw(&mut self, frame: &mut Frame, main_widget: &MainWidget, state: &mut MainState) {
@@ -65,29 +64,23 @@ impl App {
         &mut self,
         view_model: &MainViewModel,
         state: &MainState,
-    ) -> Option<Key> {
-        if event::poll(Duration::from_millis(250))
-            .context("failed to poll event")
-            .unwrap()
-        {
-            if let Event::Key(key_event) = event::read().context("failed to read event").unwrap() {
-                let key = key_event_to_key(&key_event).unwrap();
-                self.app_state.update(key.clone());
+    ) -> eyre::Result<Option<Key>> {
+        if event::poll(Duration::from_millis(250))? {
+            {
+                if let Event::Key(key_event) = event::read()? {
+                    let key = key_event_to_key(&key_event)?;
+                    self.app_state.update(key.clone());
 
-                if view_model.needs_update(state, &self.workflow, &key) {
-                    return Some(key);
+                    if view_model.needs_update(state, &self.workflow, &key) {
+                        return Ok(Some(key));
+                    }
                 }
             }
         }
-        None
+        Ok(None)
     }
 
-    fn update(
-        &mut self,
-        view_model: &mut MainViewModel,
-        state: &mut MainState,
-        key: &Key,
-    ) {
+    fn update(&mut self, view_model: &mut MainViewModel, state: &mut MainState, key: &Key) {
         if *key == self.quit_control.get_key() {
             self.app_state.quit();
             return;
@@ -95,9 +88,8 @@ impl App {
         view_model.update(state, &mut self.workflow, &key);
     }
 }
-
 //TODO move this to IO maybe
-fn key_event_to_key(event: &KeyEvent) -> Result<Key> {
+fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMappingError> {
     let key = match event.code {
         KeyCode::Char(c) => Key::Char(c),
         KeyCode::Enter => Key::Enter,
@@ -115,8 +107,19 @@ fn key_event_to_key(event: &KeyEvent) -> Result<Key> {
         KeyCode::Delete => Key::Delete,
         KeyCode::Insert => Key::Insert,
         KeyCode::F(n) => Key::F(n),
-        _ => return Err(eyre::eyre!("Unsupported key event: {:?}", event)),
+        _ => return Err(KeyEventToKeyMappingError),
     };
 
     Ok(key)
 }
+
+#[derive(Debug)]
+pub(crate) struct KeyEventToKeyMappingError;
+
+impl Display for KeyEventToKeyMappingError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Failed to map KeyEvent to Key. This is likely a development oversight. Please report this issue on github.")
+    }
+}
+
+impl Error for KeyEventToKeyMappingError {}
