@@ -1,8 +1,7 @@
+use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
-
-use super::{control::Control, state::State, workflow::CommandRunner, Line};
+use super::{control::Control, state::State, workflow::CommandRunner};
 
 pub(crate) mod builder;
 
@@ -27,12 +26,11 @@ impl<R: CommandRunner, M: VariableMapper> Transition<R, M> {
 
     pub fn get_transition_command(
         &self,
-        selected_line: Option<Line>,
+        input: Option<&str>,
     ) -> Result<String, DisplayToCommandMappingError> {
-        let input = selected_line.map_or(String::new(), |l| l.0);
         let result = self
             .selected_display_to_command
-            .map(input.as_str())
+            .map(input.map_or("", |s| s))
             .nth(0);
 
         match result {

@@ -9,7 +9,7 @@ use std::cell::Ref;
 
 pub use control::Control;
 use control::Key;
-pub use display::{Display, Line};
+pub use display::Display;
 use error::StateTransitionError;
 
 pub trait TerminalFlow {

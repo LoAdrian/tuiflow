@@ -7,7 +7,7 @@ use std::{
     rc::Rc,
 };
 
-use super::{control::{Control, Key}, display, error::StateTransitionError, state::State, variable_mapping::VariableMapper, Line, TerminalFlow};
+use super::{control::{Control, Key}, display, error::StateTransitionError, state::State, variable_mapping::VariableMapper, TerminalFlow};
 
 pub(crate) mod builder;
 
@@ -52,22 +52,13 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
     ) -> Result<(), StateTransitionError> {
         let transition_result: Result<Rc<RefCell<State<R, M>>>, StateTransitionError>;
         {
-            let selected_line: Option<Line>;
-
-            {
-                //Scope RefCell borrow
-                // TODO move all this to state
-                let display = self.get_display();
-                selected_line = display
-                    .lines
-                    .get(display_selection_index)
-                    .map(|l| l.clone()); // double borrow if we don't do this // TODO: eliminate this smell
-            }
-
+            let selected_line = self
+                .current_state.borrow().get_line(display_selection_index).map(|l| l.clone().0);
+            
             transition_result = self
                 .current_state
                 .borrow_mut()
-                .transition(selected_line, key);
+                .transition(selected_line.as_deref(), key);
         }
 
         match transition_result {

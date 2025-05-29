@@ -42,11 +42,11 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
 
     pub(crate) fn transition(
         &mut self,
-        display_selection: Option<Line>,
+        input: Option<&str>,
         key: &Key,
     ) -> Result<Rc<RefCell<State<R, M>>>, StateTransitionError> {
         if let Some(transition) = self.transitions.get(key) {
-            let transition_command = transition.get_transition_command(display_selection);
+            let transition_command = transition.get_transition_command(input);
             if let Ok(command_to_execute) = transition_command {
                 let cli_result = self.command_runner.run_command(&command_to_execute);
                 if let Ok(cli_output) = cli_result {
@@ -95,7 +95,11 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
     pub(crate) fn get_display(&self) -> &Display {
         &self.display
     }
-
+    
+    pub(crate) fn get_line(&self, index: usize) -> Option<&Line> {
+        self.display.lines.get(index)
+    }
+    
     fn parse_display(&self, command_output: &str) -> Display {
         let mut lines = Vec::new();
         for line_result in self.command_output_to_display.map(command_output) {
@@ -124,7 +128,6 @@ mod state_tests {
     use crate::model::state::State;
     use crate::model::transition::{DisplayToCommandMappingError, Transition};
     use crate::model::workflow::CommandRunnerError;
-    use crate::model::Line;
     use crate::{model::{
         control::Key, error::StateTransitionError, state::builder::StateBuilder, transition::builder::TransitionBuilder, variable_mapping::{MockVariableMapper, VariableMappingError}, Control
     }, workflow::MockCommandRunner};
@@ -134,10 +137,9 @@ mod state_tests {
         // Arrange
         let mut state_under_test = get_testee(get_mock_command_runner(Ok("TEST".to_string())));
         let non_existing_control = Control::new("non_existing_control", Key::Char('c'));
-        let display_selection = Some(Line("test_selection".to_string()));
 
         // Act
-        let result = state_under_test.transition(display_selection, &non_existing_control.get_key());
+        let result = state_under_test.transition(Some("test"), &non_existing_control.get_key());
 
         // Assert
         assert!(result.is_err());
@@ -163,8 +165,7 @@ mod state_tests {
         state_under_test.add_transition(fake_control.get_key(), fake_transition);
 
         // Act
-        let display_selection = Some(Line("test_selection".to_string()));
-        let result = state_under_test.transition(display_selection, &fake_control.get_key());
+        let result = state_under_test.transition(Some("test"), &fake_control.get_key());
 
         // Assert
         assert!(result.is_err());
@@ -191,8 +192,7 @@ mod state_tests {
         state_under_test.add_transition(fake_control.get_key(), fake_transition);
 
         // Act
-        let display_selection = Some(Line("test_selection".to_string()));
-        let result = state_under_test.transition(display_selection, &fake_control.get_key());
+        let result = state_under_test.transition(Some("test"), &fake_control.get_key());
 
         // Assert
         assert!(result.is_err());
@@ -221,8 +221,7 @@ mod state_tests {
         state_under_test.add_transition(fake_control.get_key(), fake_transition);
 
         // Act
-        let display_selection = Some(Line("test_selection".to_string()));
-        let result = state_under_test.transition(display_selection, &fake_control.get_key());
+        let result = state_under_test.transition(Some("test"), &fake_control.get_key());
 
         // Assert
         assert!(result.is_ok());
