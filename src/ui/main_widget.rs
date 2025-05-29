@@ -65,14 +65,14 @@ impl MainViewModel {
 //TODO Make this all more condiitional: e.g. only recreate part x when part x actually changes
 impl InputUpdatedViewModel for MainViewModel {
     type ViewState = MainState;
-    fn needs_update(&self, state: &Self::ViewState, workflow: &Workflow<ShCommandRunner, RegexVariableMapper>, key: &Key) -> bool {
+    fn needs_update(&self, state: &Self::ViewState, workflow: &impl TerminalFlow, key: &Key) -> bool {
         workflow.get_state_controls().iter().any(|control| control.get_key() == *key) 
         || self.body_view_model.needs_update(&state.body_state, workflow, key)
         || self.legend_view_model.needs_update(&(), workflow, key)
         || self.title_bar_view_model.needs_update(&(), workflow, key)
     }
 
-    fn update(&mut self, state: &mut Self::ViewState, workflow: &mut Workflow<ShCommandRunner, RegexVariableMapper>, key: &Key) {
+    fn update(&mut self, state: &mut Self::ViewState, workflow: &mut impl TerminalFlow, key: &Key) {
         if workflow.get_state_controls().iter().any(|control| control.get_key() == *key) {
             _ = workflow.run_control(state.body_state.get_selected_line_index(), key);
         }

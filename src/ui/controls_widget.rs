@@ -103,7 +103,7 @@ impl InputUpdatedViewModel for ControlsViewModel {
     fn needs_update(
         &self,
         _: &Self::ViewState,
-        _: &Workflow<ShCommandRunner, RegexVariableMapper>,
+        _: &impl TerminalFlow,
         _: &crate::model::control::Key,
     ) -> bool {
         false
@@ -112,10 +112,7 @@ impl InputUpdatedViewModel for ControlsViewModel {
     fn update(
         &mut self,
         _: &mut Self::ViewState,
-        workflow: &mut Workflow<
-            ShCommandRunner,
-            RegexVariableMapper,
-        >,
+        workflow: &mut impl TerminalFlow,
         _: &crate::model::control::Key,
     ) {
         self.entries = workflow

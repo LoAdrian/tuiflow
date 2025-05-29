@@ -10,8 +10,6 @@ use ratatui::{
 use crate::{
     input::InputUpdatedViewModel,
     model::{control::Key, Display, TerminalFlow},
-    workflow::ShCommandRunner,
-    RegexVariableMapper, Workflow,
 };
 
 // TODO: find a better solution than RefCell for everything mutable
@@ -78,21 +76,11 @@ impl BodyViewModel {
 
 impl InputUpdatedViewModel for BodyViewModel {
     type ViewState = BodyState;
-    fn needs_update(
-        &self,
-        _: &Self::ViewState,
-        _: &Workflow<ShCommandRunner, RegexVariableMapper>,
-        key: &Key,
-    ) -> bool {
+    fn needs_update(&self, _: &Self::ViewState, _: &impl TerminalFlow, key: &Key) -> bool {
         *key == self.selection_down || *key == self.selection_up
     }
 
-    fn update(
-        &mut self,
-        state: &mut Self::ViewState,
-        workflow: &mut Workflow<ShCommandRunner, RegexVariableMapper>,
-        key: &Key,
-    ) {
+    fn update(&mut self, state: &mut Self::ViewState, workflow: &mut impl TerminalFlow, key: &Key) {
         if *key == self.selection_down {
             state.move_selection_down();
         } else if *key == self.selection_up {
@@ -133,7 +121,7 @@ impl BodyState {
     pub fn select_first(&mut self) {
         self.list_state.select(Some(0));
     }
-    
+
     pub fn get_selected_line_index(&self) -> usize {
         self.list_state.selected().unwrap_or(0)
     }

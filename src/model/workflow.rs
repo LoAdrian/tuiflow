@@ -1,19 +1,13 @@
+use mockall::automock;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use std::{
     cell::{Ref, RefCell},
     process::Command,
     rc::Rc,
 };
 
-use mockall::automock;
-
-use super::{
-    control::{Control, Key},
-    display::Display,
-    error::StateTransitionError,
-    state::State,
-    variable_mapping::VariableMapper,
-    Line, TerminalFlow,
-};
+use super::{control::{Control, Key}, display, error::StateTransitionError, state::State, variable_mapping::VariableMapper, Line, TerminalFlow};
 
 pub(crate) mod builder;
 
@@ -31,7 +25,7 @@ impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
             .expect("Initializer state must contain at least one control");
         let current_state = initializer_state_mut
             .transition(None, &init_control.get_key())
-            .expect("Something went wrong during the intial transition");
+            .expect("Something went wrong during the initial transition");
         Self {
             current_state,
             app_title,
@@ -75,7 +69,7 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
         }
     }
 
-    fn get_display(&self) -> Ref<Display> {
+    fn get_display(&self) -> Ref<display::Display> {
         Ref::map(self.current_state.borrow(), |x| x.get_display())
     }
 
@@ -99,20 +93,35 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
 
 #[automock]
 pub trait CommandRunner {
-    fn run_command(&self, command: &str) -> Result<String, ()>;
+    fn run_command(&self, command: &str) -> Result<String, CommandRunnerError>;
 }
+
+#[derive(Debug)]
+pub struct CommandRunnerError {
+    pub command: String,
+}
+
+impl Display for CommandRunnerError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "Failed to run command '{}'", self.command)
+    }
+}
+
+impl Error for CommandRunnerError {}
 
 //move this out of the model
 #[derive(Clone)]
 pub struct ShCommandRunner;
 
 impl CommandRunner for ShCommandRunner {
-    fn run_command(&self, command: &str) -> Result<String, ()> {
+    fn run_command(&self, command: &str) -> Result<String, CommandRunnerError> {
         let cli_result = Command::new("sh").arg("-c").arg(command).output();
         if let Ok(cli_output) = cli_result {
             Ok(String::from_utf8(cli_output.stdout).unwrap())
         } else {
-            Err(())
+            Err(CommandRunnerError {
+                command: format!("{} {}", "sh -c", command),
+            })
         }
     }
 }
