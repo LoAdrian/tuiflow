@@ -26,7 +26,7 @@ impl RegexVariableMapper {
     pub fn identity() -> Self {
         Self {
             input_filter: Regex::new("(?<input>.*)")
-                .expect("Failed to compile identity regex. Please contact a developer."),
+                .expect("Failed to compile identity regex. Please report this on GitHub."),
             output_format: String::from("<input>"),
         }
     }

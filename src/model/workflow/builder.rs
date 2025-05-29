@@ -47,7 +47,7 @@ impl<'a, C: CommandRunner + Clone, M: VariableMapper> WorkflowBuilder<'a, C, M> 
             .build();
         let initializer_state = State::new("INIT", M::identity(), vec![initial_transition], self.command_runner.clone().unwrap());
 
-        Workflow::<C, M>::new(initializer_state, self.app_title.unwrap().to_string())
+        Workflow::<C, M>::new(initializer_state, self.app_title.unwrap().to_string()).expect("Error building Workflow")
     }
 }
 

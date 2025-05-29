@@ -17,21 +17,31 @@ pub(crate) struct Workflow<R: CommandRunner, M: VariableMapper> {
 }
 
 impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
-    pub fn new(initializer_state: State<R, M>, app_title: String) -> Self {
+    pub fn new(initializer_state: State<R, M>, app_title: String) -> Result<Self, InitialTransitionError> {
         let mut initializer_state_mut = initializer_state;
         let init_control = initializer_state_mut
             .get_controls()
             .pop()
-            .expect("Initializer state must contain at least one control");
+            .expect("Initializer state must contain at least one control. Please report this issue on github.");
         let current_state = initializer_state_mut
-            .transition(None, &init_control.get_key())
-            .expect("Something went wrong during the initial transition");
-        Self {
+            .transition(None, &init_control.get_key()).map_err(|e| InitialTransitionError(e))?;
+        Ok(Self {
             current_state,
             app_title,
-        }
+        })
     }
 }
+
+#[derive(Debug)]
+pub(crate) struct InitialTransitionError(StateTransitionError);
+
+impl Display for InitialTransitionError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Initial transition error: {}", self.0)
+    }
+}
+
+impl Error for InitialTransitionError {}
 
 // TODO: Probably put this and impl to somewhere else
 impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
@@ -117,11 +127,13 @@ impl CommandRunner for ShCommandRunner {
     fn run_command(&self, command: &str) -> Result<String, CommandRunnerError> {
         let cli_result = Command::new("sh").arg("-c").arg(command).output();
         if let Ok(cli_output) = cli_result {
-            Ok(String::from_utf8(cli_output.stdout).unwrap())
-        } else {
-            Err(CommandRunnerError {
-                command: format!("{} {}", "sh -c", command),
-            })
+            if let Ok(cli_result) = String::from_utf8(cli_output.stdout) {
+                return Ok(cli_result)
+            }
         }
+
+        Err(CommandRunnerError {
+            command: format!("{} {}", "sh -c", command),
+        })
     }
 }
