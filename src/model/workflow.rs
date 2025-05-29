@@ -1,4 +1,4 @@
-use mockall::automock;
+use mockall::mock;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::{
@@ -101,12 +101,23 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
     }
 }
 
-#[automock]
-pub trait CommandRunner {
+pub trait CommandRunner: Clone {
     fn run_command(&self, command: &str) -> Result<String, CommandRunnerError>;
 }
 
-#[derive(Debug)]
+mock! {
+    pub(crate) CommandRunner {}
+    
+    impl Clone for CommandRunner {
+        fn clone(&self) -> Self;
+    }
+    
+    impl CommandRunner for CommandRunner {
+        fn run_command(&self, command: &str) -> Result<String, CommandRunnerError>;
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct CommandRunnerError {
     pub command: String,
 }
