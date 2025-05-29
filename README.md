@@ -40,3 +40,11 @@ Each state also maps the results of the cli-command delimited by newlines to the
 - `!Delete`,
 - `!Insert`,
 - `!F <u8>`,
+
+## Planned Features
+[x] Basic regex state transitions
+[] hide parts of a displayed line by tagging it in the regex
+[] allow multiple actions with the same key on the same transition but with different regex, choosing the first matching action
+[] add an input-state-type that allows the user to input something instead of just selecting lines
+[] add versions to the flow file and create a compatibility list
+[] create a default search function to quickly select lines based on a keyboard input
