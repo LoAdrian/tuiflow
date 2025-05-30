@@ -5,12 +5,12 @@ use ratatui::{
 };
 
 use crate::{
-    input::InputUpdatedViewModel,
-    model::{Control, TerminalFlow},
-    workflow::ShCommandRunner,
+    io::InputUpdatedViewModel,
+    model::{Control, TerminalFlow}
+    ,
     RegexVariableMapper, Workflow,
 };
-
+use crate::io::sh_command_runner::ShCommandRunner;
 use super::key_control_view_model::KeyControlViewModel;
 
 #[derive(Clone)]

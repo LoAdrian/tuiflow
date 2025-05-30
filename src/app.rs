@@ -1,25 +1,22 @@
 use crate::app::configuration::AppConfiguration;
 use crate::app::factory::WorkflowFactory;
+use crate::io::sh_command_runner::ShCommandRunner;
 use crate::{
-    input::InputUpdatedViewModel,
+    io,
+    io::InputUpdatedViewModel,
     model::{control::Key, Control},
     ui::main_widget::{MainState, MainViewModel, MainWidget},
-    workflow::ShCommandRunner,
     RegexVariableMapper, Workflow,
 };
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event};
 use ratatui::{widgets::StatefulWidgetRef, DefaultTerminal, Frame};
 use state::AppState;
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
 pub(crate) mod configuration;
 mod factory;
 mod state;
 
-// TODO: App is the actual entry point -> not the main function
-// App is also not the user interface
 pub struct App {
     app_state: AppState,
     quit_control: Control,
@@ -68,7 +65,7 @@ impl App {
         if event::poll(Duration::from_millis(250))? {
             {
                 if let Event::Key(key_event) = event::read()? {
-                    let key = key_event_to_key(&key_event)?;
+                    let key = io::key_event_to_model_mapping::key_event_to_key(&key_event)?;
                     self.app_state.update(key.clone());
 
                     if view_model.needs_update(state, &self.workflow, &key) {
@@ -88,38 +85,3 @@ impl App {
         view_model.update(state, &mut self.workflow, &key);
     }
 }
-//TODO move this to IO maybe
-fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMappingError> {
-    let key = match event.code {
-        KeyCode::Char(c) => Key::Char(c),
-        KeyCode::Enter => Key::Enter,
-        KeyCode::Backspace => Key::Backspace,
-        KeyCode::Tab => Key::Tab,
-        KeyCode::Esc => Key::Esc,
-        KeyCode::Up => Key::Up,
-        KeyCode::Down => Key::Down,
-        KeyCode::Left => Key::Left,
-        KeyCode::Right => Key::Right,
-        KeyCode::Home => Key::Home,
-        KeyCode::End => Key::End,
-        KeyCode::PageUp => Key::PageUp,
-        KeyCode::PageDown => Key::PageDown,
-        KeyCode::Delete => Key::Delete,
-        KeyCode::Insert => Key::Insert,
-        KeyCode::F(n) => Key::F(n),
-        _ => return Err(KeyEventToKeyMappingError),
-    };
-
-    Ok(key)
-}
-
-#[derive(Debug)]
-pub(crate) struct KeyEventToKeyMappingError;
-
-impl Display for KeyEventToKeyMappingError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Failed to map KeyEvent to Key. This is likely a development oversight. Please report this issue on github.")
-    }
-}
-
-impl Error for KeyEventToKeyMappingError {}

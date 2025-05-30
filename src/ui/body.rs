@@ -8,7 +8,7 @@ use ratatui::{
 };
 
 use crate::{
-    input::InputUpdatedViewModel,
+    io::InputUpdatedViewModel,
     model::{control::Key, Display, TerminalFlow},
 };
 

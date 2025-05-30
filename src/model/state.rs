@@ -1,11 +1,16 @@
-use std::{cell::{BorrowMutError, RefCell}, collections::HashMap, rc::Rc};
+use std::{
+    cell::{BorrowMutError, RefCell},
+    collections::HashMap,
+    rc::Rc,
+};
 
 use super::{
     control::{Control, Key},
     display::{Display, Line},
     error::StateTransitionError,
     transition::Transition,
-    variable_mapping::VariableMapper, workflow::CommandRunner,
+    variable_mapping::VariableMapper,
+    workflow::CommandRunner,
 };
 
 pub(crate) mod builder;
@@ -51,14 +56,16 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
                 let cli_result = self.command_runner.run_command(&command_to_execute);
                 if let Ok(cli_output) = cli_result {
                     let next_state = transition.get_next_state();
-                    _ = next_state.try_borrow_mut() //TODO: fix this hack
+                    _ = next_state
+                        .try_borrow_mut() //TODO: fix this hack
                         .and_then(|mut next_state| {
                             next_state.display(&cli_output);
                             Ok(())
                         })
-                        .or_else(|_| { // Next state is this state
+                        .or_else(|_| {
+                            // Next state is this state
                             self.display(&cli_output);
-                            Ok::<_,BorrowMutError>(())
+                            Ok::<_, BorrowMutError>(())
                         });
                     Ok(next_state.clone())
                 } else {
@@ -95,11 +102,11 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
     pub(crate) fn get_display(&self) -> &Display {
         &self.display
     }
-    
+
     pub(crate) fn get_line(&self, index: usize) -> Option<&Line> {
         self.display.lines.get(index)
     }
-    
+
     fn parse_display(&self, command_output: &str) -> Display {
         let mut lines = Vec::new();
         for line_result in self.command_output_to_display.map(command_output) {
@@ -120,17 +127,21 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
     }
 }
 
-
 #[cfg(test)]
 mod state_tests {
     use std::{cell::RefCell, rc::Rc};
 
+    use crate::model::command_runner::{CommandRunnerError, MockCommandRunner};
     use crate::model::state::State;
     use crate::model::transition::{DisplayToCommandMappingError, Transition};
-    use crate::model::workflow::CommandRunnerError;
-    use crate::{model::{
-        control::Key, error::StateTransitionError, state::builder::StateBuilder, transition::builder::TransitionBuilder, variable_mapping::{MockVariableMapper, VariableMappingError}, Control
-    }, workflow::MockCommandRunner};
+    use crate::model::{
+        control::Key,
+        error::StateTransitionError,
+        state::builder::StateBuilder,
+        transition::builder::TransitionBuilder,
+        variable_mapping::{MockVariableMapper, VariableMappingError},
+        Control,
+    };
 
     #[test]
     fn transition_with_unexisting_controlkey_returns_error() {
@@ -158,10 +169,13 @@ mod state_tests {
             .with_command_runner(get_mock_command_runner(Ok("TEST".to_string())))
             .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
             .build();
-        let mut state_under_test = get_testee(get_mock_command_runner(Err(CommandRunnerError{command: "TEST".to_string()})));
+        let mut state_under_test = get_testee(get_mock_command_runner(Err(CommandRunnerError {
+            command: "TEST".to_string(),
+        })));
         let fake_variable_mapper = get_mock_variable_mapper(Ok("TEST".to_string()));
-        let fake_transition = get_mock_transition(&fake_control, fake_target_state, fake_variable_mapper);
-        
+        let fake_transition =
+            get_mock_transition(&fake_control, fake_target_state, fake_variable_mapper);
+
         state_under_test.add_transition(fake_control.get_key(), fake_transition);
 
         // Act
@@ -179,14 +193,11 @@ mod state_tests {
     fn transition_with_failing_selection_to_command_mapping_returns_error() {
         // Arrange
         let fake_control = Control::new("control", Key::Char('c'));
-        let fake_target_state = StateBuilder::new()
-            .with_display_name("TARGET".to_string())
-            .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
-            .with_command_runner(get_mock_command_runner(Ok("TEST".to_string())))
-            .build();
+        let fake_target_state = get_mock_state();
 
         let fake_variable_mapper = get_mock_variable_mapper(Err(VariableMappingError));
-        let fake_transition = get_mock_transition(&fake_control, fake_target_state, fake_variable_mapper);
+        let fake_transition =
+            get_mock_transition(&fake_control, fake_target_state, fake_variable_mapper);
         let mut state_under_test = get_testee(get_mock_command_runner(Ok("TEST".to_string())));
 
         state_under_test.add_transition(fake_control.get_key(), fake_transition);
@@ -198,7 +209,9 @@ mod state_tests {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),
-            StateTransitionError::SelectionToCommandMappingFailed(DisplayToCommandMappingError::VariableMappingError(VariableMappingError))
+            StateTransitionError::SelectionToCommandMappingFailed(
+                DisplayToCommandMappingError::VariableMappingError(VariableMappingError)
+            )
         )
     }
 
@@ -207,15 +220,11 @@ mod state_tests {
     fn transition_with_successful_command_execution_returns_next_state() {
         // Arrange
         let fake_control = Control::new("test_control", Key::Char('c'));
-        let fake_target_state = StateBuilder::new()
-            .with_display_name("TARGET".to_string())
-            .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
-            .with_command_runner(get_mock_command_runner(Ok("TEST".to_string())))
-            .build();
-
+        let fake_target_state = get_mock_state();
         let fake_variable_mapper = get_mock_variable_mapper(Ok("TEST".to_string()));
 
-        let fake_transition = get_mock_transition(&fake_control, fake_target_state, fake_variable_mapper);
+        let fake_transition =
+            get_mock_transition(&fake_control, fake_target_state, fake_variable_mapper);
 
         let mut state_under_test = get_testee(get_mock_command_runner(Ok("TEST".to_string())));
         state_under_test.add_transition(fake_control.get_key(), fake_transition);
@@ -228,7 +237,11 @@ mod state_tests {
         assert_eq!(result.unwrap().borrow().get_name(), "TARGET");
     }
 
-    fn get_mock_transition(fake_control: &Control, fake_target_state: State<MockCommandRunner, MockVariableMapper>, variable_mapper: MockVariableMapper) -> Transition<MockCommandRunner, MockVariableMapper> {
+    fn get_mock_transition(
+        fake_control: &Control,
+        fake_target_state: State<MockCommandRunner, MockVariableMapper>,
+        variable_mapper: MockVariableMapper,
+    ) -> Transition<MockCommandRunner, MockVariableMapper> {
         TransitionBuilder::new()
             .with_control(fake_control.clone())
             .with_next_state(Rc::new(RefCell::new(fake_target_state)))
@@ -236,6 +249,14 @@ mod state_tests {
             .build()
     }
 
+    fn get_mock_state() -> State<MockCommandRunner, MockVariableMapper> {
+        StateBuilder::new()
+            .with_display_name("TARGET".to_string())
+            .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))
+            .with_command_runner(get_mock_command_runner(Ok("TEST".to_string())))
+            .build()
+    }
+    
     fn get_mock_variable_mapper(
         single_map_result: Result<String, VariableMappingError>,
     ) -> MockVariableMapper {
@@ -249,17 +270,22 @@ mod state_tests {
             .returning(move || get_mock_variable_mapper(single_map_result_recurse.clone()));
         mock_variable_mapper
     }
-    
+
     fn get_mock_command_runner(result: Result<String, CommandRunnerError>) -> MockCommandRunner {
         let mut mock_command_runner = MockCommandRunner::new();
         let result_recurse = result.clone();
-        mock_command_runner.expect_run_command().returning(move |_| result.clone());
-        mock_command_runner.expect_clone()
+        mock_command_runner
+            .expect_run_command()
+            .returning(move |_| result.clone());
+        mock_command_runner
+            .expect_clone()
             .returning(move || get_mock_command_runner(result_recurse.clone()));
         mock_command_runner
     }
-    
-    fn get_testee(command_runner: MockCommandRunner) -> State<MockCommandRunner, MockVariableMapper> {
+
+    fn get_testee(
+        command_runner: MockCommandRunner,
+    ) -> State<MockCommandRunner, MockVariableMapper> {
         StateBuilder::new()
             .with_display_name("test_state".to_string())
             .with_command_output_to_display_mapper(get_mock_variable_mapper(Ok("TEST".to_string())))

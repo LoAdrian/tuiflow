@@ -1,13 +1,18 @@
-use mockall::mock;
+use super::{
+    control::{Control, Key},
+    display,
+    error::StateTransitionError,
+    state::State,
+    variable_mapping::VariableMapper,
+    TerminalFlow,
+};
+pub(crate) use crate::model::command_runner::CommandRunner;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::{
     cell::{Ref, RefCell},
-    process::Command,
     rc::Rc,
 };
-
-use super::{control::{Control, Key}, display, error::StateTransitionError, state::State, variable_mapping::VariableMapper, TerminalFlow};
 
 pub(crate) mod builder;
 
@@ -17,14 +22,18 @@ pub(crate) struct Workflow<R: CommandRunner, M: VariableMapper> {
 }
 
 impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
-    pub fn new(initializer_state: State<R, M>, app_title: String) -> Result<Self, InitialTransitionError> {
+    pub fn new(
+        initializer_state: State<R, M>,
+        app_title: String,
+    ) -> Result<Self, InitialTransitionError> {
         let mut initializer_state_mut = initializer_state;
         let init_control = initializer_state_mut
             .get_controls()
             .pop()
             .expect("Initializer state must contain at least one control. Please report this issue on github.");
         let current_state = initializer_state_mut
-            .transition(None, &init_control.get_key()).map_err(|e| InitialTransitionError(e))?;
+            .transition(None, &init_control.get_key())
+            .map_err(|e| InitialTransitionError(e))?;
         Ok(Self {
             current_state,
             app_title,
@@ -53,8 +62,11 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
         let transition_result: Result<Rc<RefCell<State<R, M>>>, StateTransitionError>;
         {
             let selected_line = self
-                .current_state.borrow().get_line(display_selection_index).map(|l| l.clone().0);
-            
+                .current_state
+                .borrow()
+                .get_line(display_selection_index)
+                .map(|l| l.clone().0);
+
             transition_result = self
                 .current_state
                 .borrow_mut()
@@ -89,53 +101,5 @@ impl<R: CommandRunner, M: VariableMapper> TerminalFlow for Workflow<R, M> {
             .into_iter()
             .map(|c| c.clone())
             .collect()
-    }
-}
-
-pub trait CommandRunner: Clone {
-    fn run_command(&self, command: &str) -> Result<String, CommandRunnerError>;
-}
-
-mock! {
-    pub(crate) CommandRunner {}
-    
-    impl Clone for CommandRunner {
-        fn clone(&self) -> Self;
-    }
-    
-    impl CommandRunner for CommandRunner {
-        fn run_command(&self, command: &str) -> Result<String, CommandRunnerError>;
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct CommandRunnerError {
-    pub command: String,
-}
-
-impl Display for CommandRunnerError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(f, "Failed to run command '{}'", self.command)
-    }
-}
-
-impl Error for CommandRunnerError {}
-
-//move this out of the model
-#[derive(Clone)]
-pub struct ShCommandRunner;
-
-impl CommandRunner for ShCommandRunner {
-    fn run_command(&self, command: &str) -> Result<String, CommandRunnerError> {
-        let cli_result = Command::new("sh").arg("-c").arg(command).output();
-        if let Ok(cli_output) = cli_result {
-            if let Ok(cli_result) = String::from_utf8(cli_output.stdout) {
-                return Ok(cli_result)
-            }
-        }
-
-        Err(CommandRunnerError {
-            command: format!("{} {}", "sh -c", command),
-        })
     }
 }

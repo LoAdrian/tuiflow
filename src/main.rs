@@ -9,7 +9,7 @@ use std::env;
 use std::fs::File;
 
 mod app;
-mod input;
+mod io;
 mod model;
 mod ui;
 

@@ -1,8 +1,8 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
 
 
-use crate::{input::InputUpdatedViewModel, model::{control::Key, Control, TerminalFlow}, workflow::ShCommandRunner, RegexVariableMapper, Workflow};
-
+use crate::{io::InputUpdatedViewModel, model::{control::Key, Control, TerminalFlow}, RegexVariableMapper, Workflow};
+use crate::io::sh_command_runner::ShCommandRunner;
 use super::{body::{BodyState, BodyViewModel, BodyWidget}, controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL}, title_bar_widget::{TitleBarViewModel, TitleBarWidget}};
 
 pub(crate) struct MainWidget<'a> {

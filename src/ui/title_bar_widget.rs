@@ -1,6 +1,7 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
 
-use crate::{input::InputUpdatedViewModel, model::TerminalFlow, workflow::ShCommandRunner, RegexVariableMapper, Workflow};
+use crate::io::sh_command_runner::ShCommandRunner;
+use crate::{io::InputUpdatedViewModel, model::TerminalFlow, RegexVariableMapper, Workflow};
 
 #[derive(Clone)]
 pub struct TitleBarWidget<'a> {

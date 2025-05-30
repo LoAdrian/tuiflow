@@ -1,3 +1,6 @@
+pub(crate) mod key_event_to_model_mapping;
+pub(crate) mod sh_command_runner;
+
 use crate::model::TerminalFlow;
 use crate::model::control::Key;
 
