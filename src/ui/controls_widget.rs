@@ -3,11 +3,10 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     widgets::{Block, BorderType, Borders, Paragraph, WidgetRef},
 };
-
+use tuiflow_model::{Control, TerminalFlow};
+use tuiflow_model::control::Key;
 use crate::{
     io::InputUpdatedViewModel,
-    model::{Control, TerminalFlow}
-    ,
     RegexVariableMapper, Workflow,
 };
 use crate::io::sh_command_runner::ShCommandRunner;
@@ -104,7 +103,7 @@ impl InputUpdatedViewModel for ControlsViewModel {
         &self,
         _: &Self::ViewState,
         _: &impl TerminalFlow,
-        _: &crate::model::control::Key,
+        _: &Key,
     ) -> bool {
         false
     }
@@ -113,7 +112,7 @@ impl InputUpdatedViewModel for ControlsViewModel {
         &mut self,
         _: &mut Self::ViewState,
         workflow: &mut impl TerminalFlow,
-        _: &crate::model::control::Key,
+        _: &Key,
     ) {
         self.entries = workflow
             .get_state_controls()

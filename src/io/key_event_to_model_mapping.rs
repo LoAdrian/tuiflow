@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use crossterm::event::{KeyCode, KeyEvent};
-use crate::model::control::Key;
+use tuiflow_model::control::Key;
 
 pub(crate) fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMappingError> {
     let key = match event.code {

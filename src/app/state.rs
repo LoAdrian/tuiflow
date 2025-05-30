@@ -1,4 +1,4 @@
-use crate::{model::control::Key};
+use tuiflow_model::control::Key;
 
 pub(crate) enum AppState {
     Running,

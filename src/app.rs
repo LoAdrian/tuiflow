@@ -4,7 +4,6 @@ use crate::io::sh_command_runner::ShCommandRunner;
 use crate::{
     io,
     io::InputUpdatedViewModel,
-    model::{control::Key, Control},
     ui::main_widget::{MainState, MainViewModel, MainWidget},
     RegexVariableMapper, Workflow,
 };
@@ -12,6 +11,7 @@ use crossterm::event::{self, Event};
 use ratatui::{widgets::StatefulWidgetRef, DefaultTerminal, Frame};
 use state::AppState;
 use std::time::Duration;
+use tuiflow_model::{control::Key, Control};
 
 pub(crate) mod configuration;
 mod factory;

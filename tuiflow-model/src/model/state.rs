@@ -3,20 +3,19 @@ use std::{
     collections::HashMap,
     rc::Rc,
 };
-
+use crate::command_runner::CommandRunner;
 use super::{
     control::{Control, Key},
     display::{Display, Line},
     error::StateTransitionError,
     transition::Transition,
     variable_mapping::VariableMapper,
-    workflow::CommandRunner,
 };
 
-pub(crate) mod builder;
+pub mod builder;
 
 #[derive(Clone)]
-pub(crate) struct State<R: CommandRunner, M: VariableMapper> {
+pub struct State<R: CommandRunner, M: VariableMapper> {
     display_name: String,
     command_output_to_display: M,
     transitions: HashMap<Key, Transition<R, M>>,
@@ -25,7 +24,7 @@ pub(crate) struct State<R: CommandRunner, M: VariableMapper> {
 }
 
 impl<R: CommandRunner, M: VariableMapper> State<R, M> {
-    pub(crate) fn new(
+    pub fn new(
         display_name: &str,
         command_output_to_display: M,
         transitions: Vec<Transition<R, M>>,
@@ -45,7 +44,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
         }
     }
 
-    pub(crate) fn transition(
+    pub fn transition(
         &mut self,
         input: Option<&str>,
         key: &Key,
@@ -84,26 +83,26 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
         }
     }
 
-    pub(crate) fn get_controls(&self) -> Vec<&Control> {
+    pub fn get_controls(&self) -> Vec<&Control> {
         self.transitions
             .values()
             .map(|transition| transition.get_activation_control())
             .collect()
     }
 
-    pub(crate) fn add_transition(&mut self, key: Key, transition: Transition<R, M>) {
+    pub fn add_transition(&mut self, key: Key, transition: Transition<R, M>) {
         self.transitions.insert(key, transition);
     }
 
-    pub(crate) fn get_name(&self) -> &str {
+    pub fn get_name(&self) -> &str {
         &self.display_name
     }
 
-    pub(crate) fn get_display(&self) -> &Display {
+    pub fn get_display(&self) -> &Display {
         &self.display
     }
 
-    pub(crate) fn get_line(&self, index: usize) -> Option<&Line> {
+    pub fn get_line(&self, index: usize) -> Option<&Line> {
         self.display.lines.get(index)
     }
 
@@ -256,7 +255,7 @@ mod state_tests {
             .with_command_runner(get_mock_command_runner(Ok("TEST".to_string())))
             .build()
     }
-    
+
     fn get_mock_variable_mapper(
         single_map_result: Result<String, VariableMappingError>,
     ) -> MockVariableMapper {

@@ -1,16 +1,15 @@
 use crate::app::configuration::AppConfiguration;
 use app::App;
 use eyre::OptionExt;
-use model::{
+use tuiflow_model::{
     variable_mapping::RegexVariableMapper,
-    workflow::{self, Workflow},
+    workflow::Workflow,
 };
 use std::env;
 use std::fs::File;
 
 mod app;
 mod io;
-mod model;
 mod ui;
 
 pub fn main() -> eyre::Result<()> {

@@ -1,11 +1,11 @@
 use crate::app::configuration::AppConfiguration;
 use crate::io::sh_command_runner::ShCommandRunner;
-use crate::model::state::builder::StateBuilder;
-use crate::model::state::State;
-use crate::model::transition::builder::TransitionBuilder;
-use crate::model::variable_mapping::{RegexVariableMapper, VariableMapperCompilationError};
-use crate::model::workflow::builder::WorkflowBuilder;
-use crate::model::workflow::Workflow;
+use tuiflow_model::state::builder::StateBuilder;
+use tuiflow_model::state::State;
+use tuiflow_model::transition::builder::TransitionBuilder;
+use tuiflow_model::variable_mapping::{RegexVariableMapper, VariableMapperCompilationError};
+use tuiflow_model::workflow::builder::WorkflowBuilder;
+use tuiflow_model::workflow::Workflow;
 use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;

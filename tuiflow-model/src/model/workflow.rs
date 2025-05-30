@@ -6,17 +6,17 @@ use super::{
     variable_mapping::VariableMapper,
     TerminalFlow,
 };
-pub(crate) use crate::model::command_runner::CommandRunner;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::{
     cell::{Ref, RefCell},
     rc::Rc,
 };
+use crate::command_runner::CommandRunner;
 
-pub(crate) mod builder;
+pub mod builder;
 
-pub(crate) struct Workflow<R: CommandRunner, M: VariableMapper> {
+pub struct Workflow<R: CommandRunner, M: VariableMapper> {
     current_state: Rc<RefCell<State<R, M>>>,
     app_title: String,
 }
@@ -42,7 +42,7 @@ impl<R: CommandRunner, M: VariableMapper> Workflow<R, M> {
 }
 
 #[derive(Debug)]
-pub(crate) struct InitialTransitionError(StateTransitionError);
+pub struct InitialTransitionError(StateTransitionError);
 
 impl Display for InitialTransitionError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

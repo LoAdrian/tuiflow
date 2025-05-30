@@ -1,11 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
-
-use crate::{model::{
-    state::State,
-    transition::Transition,
-    variable_mapping::VariableMapper,
-    Control,
-}, workflow::CommandRunner};
+use crate::command_runner::CommandRunner;
+use crate::Control;
+use crate::state::State;
+use crate::transition::Transition;
+use crate::variable_mapping::VariableMapper;
 
 pub struct TransitionBuilder<R: CommandRunner, M: VariableMapper> {
     control: Option<Control>,

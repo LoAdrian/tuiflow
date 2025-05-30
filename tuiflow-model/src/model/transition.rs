@@ -1,11 +1,11 @@
 use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 use std::{cell::RefCell, fmt::Display, rc::Rc};
+use crate::command_runner::CommandRunner;
+use super::{control::Control, state::State};
 
-use super::{control::Control, state::State, workflow::CommandRunner};
+pub mod builder;
 
-pub(crate) mod builder;
-
-pub(crate) struct Transition<R: CommandRunner, M: VariableMapper> {
+pub struct Transition<R: CommandRunner, M: VariableMapper> {
     control: Control,
     next_state: Rc<RefCell<State<R, M>>>, //TODO: Check and break cycles
     selected_display_to_command: M,       // regex extraction from selection
@@ -60,7 +60,7 @@ impl<R: CommandRunner, M: VariableMapper> Clone for Transition<R, M> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum DisplayToCommandMappingError {
+pub enum DisplayToCommandMappingError {
     VariableMappingError(VariableMappingError),
     NoMatchFound,
 }

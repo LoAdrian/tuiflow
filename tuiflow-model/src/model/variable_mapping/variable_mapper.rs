@@ -3,7 +3,7 @@ use regex::Regex;
 use super::{VariableMapper, VariableMapperCompilationError, VariableMappingError};
 
 #[derive(Clone)]
-pub(crate) struct RegexVariableMapper {
+pub struct RegexVariableMapper {
     input_filter: Regex,
     output_format: String,
 }

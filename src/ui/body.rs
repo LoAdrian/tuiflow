@@ -6,10 +6,10 @@ use ratatui::{
         Block, BorderType, Borders, List, ListItem, ListState, StatefulWidgetRef, WidgetRef,
     },
 };
-
+use tuiflow_model::control::Key;
+use tuiflow_model::{Display, TerminalFlow};
 use crate::{
     io::InputUpdatedViewModel,
-    model::{control::Key, Display, TerminalFlow},
 };
 
 // TODO: find a better solution than RefCell for everything mutable

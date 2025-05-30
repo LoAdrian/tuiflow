@@ -1,8 +1,8 @@
 pub(crate) mod key_event_to_model_mapping;
 pub(crate) mod sh_command_runner;
 
-use crate::model::TerminalFlow;
-use crate::model::control::Key;
+use tuiflow_model::TerminalFlow;
+use tuiflow_model::control::Key;
 
 pub(crate) trait InputUpdatedViewModel {
     type ViewState;

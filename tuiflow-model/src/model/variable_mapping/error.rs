@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct VariableMapperCompilationError(pub regex::Error);
+pub struct VariableMapperCompilationError(pub regex::Error);
 impl Display for VariableMapperCompilationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Input filter regex compilation failed. Make sure that it complies with: https://docs.rs/regex/latest/regex/#syntax")
@@ -13,7 +13,7 @@ impl Error for VariableMapperCompilationError {}
 
 // TODO: Add more info to error
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) struct VariableMappingError;
+pub struct VariableMappingError;
 
 impl Display for VariableMappingError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

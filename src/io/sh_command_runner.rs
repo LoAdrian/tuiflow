@@ -1,5 +1,5 @@
-use crate::model::command_runner::CommandRunnerError;
-use crate::model::command_runner::CommandRunner;
+use tuiflow_model::command_runner::CommandRunnerError;
+use tuiflow_model::command_runner::CommandRunner;
 use std::process::Command;
 
 #[derive(Clone)]

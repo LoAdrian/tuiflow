@@ -605,15 +605,24 @@ checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
 name = "tuiflow"
 version = "0.1.0"
 dependencies = [
- "buildable-macro",
  "crossterm",
  "eyre",
  "mockall",
  "mockall_double",
  "ratatui",
- "regex",
  "serde",
  "serde_yaml",
+ "tuiflow-model",
+]
+
+[[package]]
+name = "tuiflow-model"
+version = "0.1.0"
+dependencies = [
+ "mockall",
+ "mockall_double",
+ "regex",
+ "serde",
 ]
 
 [[package]]

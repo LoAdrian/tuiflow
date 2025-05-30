@@ -1,8 +1,7 @@
-use crate::{model::{
-    state::State,
-    transition::Transition,
-    variable_mapping::VariableMapper,
-}, workflow::CommandRunner};
+use crate::command_runner::CommandRunner;
+use crate::state::State;
+use crate::transition::Transition;
+use crate::variable_mapping::VariableMapper;
 
 #[derive(Clone)]
 pub struct StateBuilder<R: CommandRunner + Clone, M: VariableMapper> {

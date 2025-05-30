@@ -1,4 +1,4 @@
-use crate::model::Control;
+use tuiflow_model::Control;
 
 // TODO: At some point implement key-combinations instead of single-key controls
 #[derive(Clone)]

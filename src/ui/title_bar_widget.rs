@@ -1,7 +1,8 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
-
+use tuiflow_model::control::Key;
+use tuiflow_model::TerminalFlow;
 use crate::io::sh_command_runner::ShCommandRunner;
-use crate::{io::InputUpdatedViewModel, model::TerminalFlow, RegexVariableMapper, Workflow};
+use crate::{io::InputUpdatedViewModel, RegexVariableMapper, Workflow};
 
 #[derive(Clone)]
 pub struct TitleBarWidget<'a> {
@@ -72,11 +73,11 @@ impl <'a> TitleBarViewModel {
 impl InputUpdatedViewModel for TitleBarViewModel {
     type ViewState = ();
 
-    fn needs_update(&self, _: &Self::ViewState, _: & impl TerminalFlow, _: &crate::model::control::Key) -> bool {
+    fn needs_update(&self, _: &Self::ViewState, _: & impl TerminalFlow, _: &Key) -> bool {
         false
     }
 
-    fn update(&mut self, _: &mut Self::ViewState, workflow: &mut impl TerminalFlow, _: &crate::model::control::Key) {
+    fn update(&mut self, _: &mut Self::ViewState, workflow: &mut impl TerminalFlow, _: &Key) {
         let current_state_title = workflow.get_state_title();
         if self.state_title != *current_state_title {
             self.state_title = current_state_title.to_string()
