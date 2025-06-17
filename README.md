@@ -82,3 +82,4 @@ states: # the states of the app
 - [ ] add an input-state-type that allows the user to input something instead of just selecting lines  
 - [ ] add versions to the flow file and create a compatibility list  
 - [ ] create a default search function to quickly select lines based on a keyboard input  
+- [ ] allow for defaults if the command did not return any lines, either by using default values or alternative commands  
