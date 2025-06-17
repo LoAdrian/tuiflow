@@ -22,9 +22,43 @@ Each transition  maps the selected line on the display to a cli-command. Every s
 Each state also maps the results of the cli-command delimited by newlines to the new lines to be displayed in the same way as the transitions map lines to commands.
 
 ## YAML file structure:
-
+```yaml
+app_title: example file explorer # the title of the app
+controls: # the controls usable to control the flow
+  selection_up: # a special reserved control to select the line above the current one
+    name: selection up # the display name of the control
+    key: !Char 'k' # the character key that will trigger the control
+  selection_down: # a special reserved control to select the line below the current one
+    name: selection down
+    key: !Char 'j'
+  quit: # a special reserved control to quit the app
+    name: quit
+    key: !Char 'q'
+  custom_controls: # custom controls that can be used to trigger transitions between states
+    moveback: # the name of the control
+      name: move back # the display name of the control
+      key: !Char 'h'
+    moveinto:
+      name: move into
+      key: !Char 'l'
+initial_command: ls -d -1 "$PWD/"** # the command that will be run to get the initial lines to display
+initial_state: show_files # the state that will be shown first
+states: # the states of the app
+  show_files: # the name of the state
+    transitions: # the transitions that can be triggered in this state
+      - control_name: moveinto # the name of the control that will trigger this transition
+        selection_filter: (?<x>.*) # the regex that will match the selected display-line (here the whole line)
+        command_pattern: ls -d -1 "<x>/"** # the command that will be run when this transition is triggered (the <x> will be replaced by the matched group of the selection_filter)
+        next_state: show_files # the target state of the transition
+      - control_name: moveback
+        selection_filter: (?<x>.*)\/.*\/.*
+        command_pattern: ls -d -1 "<x>/"**
+        next_state: show_files
+    line_filter: (?<path>.+) # the regex for the line_display_pattern
+    line_display_pattern: <path> # the pattern that will be used to display the lines (the <path> will be replaced by the matched group of the line_filter)
+```
 ### Possible Keys:
-- `!Char <char>`
+- `!Char '<char>'`
 - `!Enter`,
 - `!Backspace`,
 - `!Tab`,
