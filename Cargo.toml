@@ -1,4 +1,4 @@
-workspace = { members = ["buildable-macro", "tuiflow-model"] }
+workspace = { members = ["tuiflow-model"] }
 
 [package]
 name = "tuiflow"
