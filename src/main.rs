@@ -1,16 +1,8 @@
-use crate::app::configuration::AppConfiguration;
-use app::App;
 use eyre::OptionExt;
-use tuiflow_model::{
-    variable_mapping::RegexVariableMapper,
-    workflow::Workflow,
-};
 use std::env;
 use std::fs::File;
-
-mod app;
-mod io;
-mod ui;
+use tuiflow_app::App;
+use tuiflow_app::configuration::AppConfiguration;
 
 pub fn main() -> eyre::Result<()> {
     let tuiflow_config_path = read_config_path_or_print_err()?;

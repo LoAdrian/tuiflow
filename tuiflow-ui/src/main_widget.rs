@@ -1,11 +1,15 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
 use tuiflow_model::{Control, TerminalFlow};
 use tuiflow_model::control::Key;
-use crate::{io::InputUpdatedViewModel, RegexVariableMapper, Workflow};
+use tuiflow_model::variable_mapping::RegexVariableMapper;
+use tuiflow_model::workflow::Workflow;
+use crate::body::{BodyState, BodyViewModel, BodyWidget};
+use crate::controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL};
+use crate::io::InputUpdatedViewModel;
 use crate::io::sh_command_runner::ShCommandRunner;
-use super::{body::{BodyState, BodyViewModel, BodyWidget}, controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL}, title_bar_widget::{TitleBarViewModel, TitleBarWidget}};
+use crate::title_bar_widget::{TitleBarViewModel, TitleBarWidget};
 
-pub(crate) struct MainWidget<'a> {
+pub struct MainWidget<'a> {
     title_bar: TitleBarWidget<'a>,
     body: BodyWidget<'a>,
     legend_footer: ControlsWidget<'a>,
@@ -43,7 +47,7 @@ impl<'a> StatefulWidgetRef for MainWidget<'a> {
     
 }
 
-pub(crate) struct MainViewModel {
+pub struct MainViewModel {
     title_bar_view_model: TitleBarViewModel,
     body_view_model: BodyViewModel,
     legend_view_model: ControlsViewModel,
@@ -82,7 +86,7 @@ impl InputUpdatedViewModel for MainViewModel {
     }
 }
 
-pub (crate) struct MainState {
+pub struct MainState {
     body_state: BodyState,
 }
 

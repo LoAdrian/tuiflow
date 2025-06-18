@@ -1,5 +1,4 @@
-use crate::app::configuration::AppConfiguration;
-use crate::io::sh_command_runner::ShCommandRunner;
+use tuiflow_ui::io::sh_command_runner::ShCommandRunner;
 use tuiflow_model::state::builder::StateBuilder;
 use tuiflow_model::state::State;
 use tuiflow_model::transition::builder::TransitionBuilder;
@@ -10,8 +9,9 @@ use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use crate::configuration::AppConfiguration;
 
-pub(crate) struct WorkflowFactory {}
+pub struct WorkflowFactory {}
 
 impl WorkflowFactory {
     pub fn build_from_configuration(

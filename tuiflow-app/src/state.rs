@@ -1,6 +1,6 @@
 use tuiflow_model::control::Key;
 
-pub(crate) enum AppState {
+pub enum AppState {
     Running,
     Quitting,
 }

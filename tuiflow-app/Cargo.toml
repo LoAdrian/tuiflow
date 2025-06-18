@@ -1,16 +1,13 @@
-workspace = { members = [ "tuiflow-app", "tuiflow-model", "tuiflow-ui"] }
-
 [package]
-name = "tuiflow"
+name = "tuiflow-app"
 version = "0.1.0"
 edition = "2021"
-resolver = "2"
 
 [dependencies]
+tuiflow-model = { path = "../tuiflow-model" }
+tuiflow-ui = { path = "../tuiflow-ui" }
 serde = { version = "1.0.0", features = ["derive"] }
 serde_yaml = "0.9.33"
 crossterm = "0.29.0"
 ratatui = { version = "0.29.0", features = ["unstable-widget-ref"]}
 eyre = "0.6.12"
-
-tuiflow-app = { path = "./tuiflow-app" }

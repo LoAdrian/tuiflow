@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use crossterm::event::{KeyCode, KeyEvent};
 use tuiflow_model::control::Key;
 
-pub(crate) fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMappingError> {
+pub fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMappingError> {
     let key = match event.code {
         KeyCode::Char(c) => Key::Char(c),
         KeyCode::Enter => Key::Enter,
@@ -28,7 +28,7 @@ pub(crate) fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMap
 }
 
 #[derive(Debug)]
-pub(crate) struct KeyEventToKeyMappingError;
+pub struct KeyEventToKeyMappingError;
 
 impl Display for KeyEventToKeyMappingError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

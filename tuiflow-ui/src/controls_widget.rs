@@ -5,15 +5,14 @@ use ratatui::{
 };
 use tuiflow_model::{Control, TerminalFlow};
 use tuiflow_model::control::Key;
-use crate::{
-    io::InputUpdatedViewModel,
-    RegexVariableMapper, Workflow,
-};
+use tuiflow_model::variable_mapping::RegexVariableMapper;
+use tuiflow_model::workflow::Workflow;
+use crate::io::InputUpdatedViewModel;
 use crate::io::sh_command_runner::ShCommandRunner;
-use super::key_control_view_model::KeyControlViewModel;
+use crate::key_control_view_model::KeyControlViewModel;
 
 #[derive(Clone)]
-pub(crate) struct ControlsWidget<'a> {
+pub struct ControlsWidget<'a> {
     main_block: Block<'a>,
     entries: Vec<Paragraph<'a>>,
 }
@@ -36,7 +35,7 @@ impl<'a> ControlsWidget<'a> {
     }
 }
 
-pub(crate) const WIDGET_PADDING_VERTICAL: u16 = 2;
+pub const WIDGET_PADDING_VERTICAL: u16 = 2;
 impl<'a> WidgetRef for ControlsWidget<'a> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         self.main_block.render_ref(area, buf);
@@ -71,7 +70,7 @@ impl<'a> WidgetRef for ControlsWidget<'a> {
     }
 }
 
-pub(crate) struct ControlsViewModel {
+pub struct ControlsViewModel {
     entries: Vec<KeyControlViewModel>,
     selection_up: Control,
     selection_down: Control,

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub(crate) struct AppConfiguration {
+pub struct AppConfiguration {
     pub app_title: String,
     pub controls: ControlsConfiguration,
     pub initial_command: String,
@@ -13,14 +13,14 @@ pub(crate) struct AppConfiguration {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub(crate) struct StateConfiguration {
+pub struct StateConfiguration {
     pub transitions: Vec<TransitionConfiguration>,
     pub line_filter: String,
     pub line_display_pattern: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub(crate) struct TransitionConfiguration {
+pub struct TransitionConfiguration {
     pub control_name: String,
     pub selection_filter: String,
     pub command_pattern: String,
@@ -28,7 +28,7 @@ pub(crate) struct TransitionConfiguration {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub(crate) struct ControlsConfiguration {
+pub struct ControlsConfiguration {
     pub selection_up: Control,
     pub selection_down: Control,
     pub quit: Control,
@@ -48,12 +48,10 @@ impl Default for ControlsConfiguration {
 
 #[cfg(test)]
 mod tests {
-    use crate::app::configuration::{
-        AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration,
-    };
     use tuiflow_model::control::Key;
     use tuiflow_model::Control;
     use std::collections::HashMap;
+    use crate::configuration::{AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration};
 
     const SERIALIZED_CONFIGURATION: &'static str = r#"app_title: dora the explorah
 controls:

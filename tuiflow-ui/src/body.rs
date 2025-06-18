@@ -8,12 +8,10 @@ use ratatui::{
 };
 use tuiflow_model::control::Key;
 use tuiflow_model::{Display, TerminalFlow};
-use crate::{
-    io::InputUpdatedViewModel,
-};
+use crate::io::InputUpdatedViewModel;
 
 // TODO: find a better solution than RefCell for everything mutable
-pub(crate) struct BodyWidget<'a> {
+pub struct BodyWidget<'a> {
     main_block: Block<'static>,
     list: List<'a>,
 }
@@ -49,7 +47,7 @@ impl<'a> StatefulWidgetRef for BodyWidget<'a> {
     }
 }
 
-pub(crate) struct BodyViewModel {
+pub struct BodyViewModel {
     display: Display,
     selection_up: Key,
     selection_down: Key,
@@ -95,7 +93,7 @@ impl InputUpdatedViewModel for BodyViewModel {
     }
 }
 
-pub(crate) struct BodyState {
+pub struct BodyState {
     list_state: ListState,
 }
 

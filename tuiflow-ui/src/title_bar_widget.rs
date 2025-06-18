@@ -1,8 +1,10 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
 use tuiflow_model::control::Key;
 use tuiflow_model::TerminalFlow;
+use tuiflow_model::variable_mapping::RegexVariableMapper;
+use tuiflow_model::workflow::Workflow;
+use crate::io::InputUpdatedViewModel;
 use crate::io::sh_command_runner::ShCommandRunner;
-use crate::{io::InputUpdatedViewModel, RegexVariableMapper, Workflow};
 
 #[derive(Clone)]
 pub struct TitleBarWidget<'a> {
@@ -55,7 +57,7 @@ impl<'a> WidgetRef for TitleBarWidget<'a> {
     }
 }
 
-pub(crate) struct TitleBarViewModel {
+pub struct TitleBarViewModel {
     app_title: String,
     state_title: String,
 }
