@@ -85,4 +85,6 @@ states: # the states of the app
 - [ ] allow for defaults if the command did not return any lines, either by using default values or alternative commands  
 - [ ] allow for multiple panes or tabs but sensitive to values of other panes or tabs. 
 - [ ] add an argument-input state that can be opted for as an initializer state that takes some argument and / or can be piped to.  
-- [ ] add a prose state type that shows a single page of prose.   
+- [ ] add a prose state type that shows a single page of prose.  
+- [ ] add a state type that is able to display interactive cli programs (like other tuiflows or vim or whatever) and that may or may not return to the initiating tuiflow after execution finishes.  
+- [ ] create terminal states.  
