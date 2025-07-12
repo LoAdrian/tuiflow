@@ -83,4 +83,6 @@ states: # the states of the app
 - [ ] add versions to the flow file and create a compatibility list  
 - [ ] create a default search function to quickly select lines based on a keyboard input  
 - [ ] allow for defaults if the command did not return any lines, either by using default values or alternative commands  
-- [ ] allow for multiple panes or tabs but sensitive to values of other panes or tabs  
+- [ ] allow for multiple panes or tabs but sensitive to values of other panes or tabs. 
+- [ ] add an argument-input state that can be opted for as an initializer state that takes some argument and / or can be piped to.  
+- [ ] add a prose state type that shows a single page of prose.   
