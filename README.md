@@ -88,3 +88,4 @@ states: # the states of the app
 - [ ] add a prose state type that shows a single page of prose.  
 - [ ] add a state type that is able to display interactive cli programs (like other tuiflows or vim or whatever) and that may or may not return to the initiating tuiflow after execution finishes.  
 - [ ] create terminal states.  
+- [ ] add autotransitioning states.  
