@@ -76,17 +76,18 @@ states: # the states of the app
 - `!F <u8>`,
 
 ## Planned Features
-- [x] Basic regex state transitions  
+- [x] Basic regex state transitions.  
 - [ ] hide parts of a displayed line by tagging it in the regex or alternatively make the transitions receive the lines without the `line_display_pattern` mask.  
-- [ ] allow multiple actions with the same key on the same transition but with different regex, choosing the first matching action  
-- [ ] add an input-state-type that allows the user to input something instead of just selecting lines  
-- [ ] add versions to the flow file and create a compatibility list  
-- [ ] create a default search function to quickly select lines based on a keyboard input  
-- [ ] allow for defaults if the command did not return any lines, either by using default values or alternative commands  
+- [ ] allow multiple actions with the same key on the same transition but with different regex, choosing the first matching action.  
+- [ ] add an input-state-type that allows the user to input something instead of just selecting lines.  
+- [ ] add versions to the flow file and create a compatibility list.  
+- [ ] create a default search function to quickly select lines based on a keyboard input.  
+- [ ] allow for defaults if the command did not return any lines, either by using default values or alternative commands.  
 - [ ] allow for multiple panes or tabs but sensitive to values of other panes or tabs. 
 - [ ] add an argument-input state that can be opted for as an initializer state that takes some argument and / or can be piped to.  
 - [ ] add a prose state type that shows a single page of prose.  
 - [ ] add a state type that is able to display interactive cli programs (like other tuiflows or vim or whatever) and that may or may not return to the initiating tuiflow after execution finishes.  
 - [ ] create terminal states.  
 - [ ] add autotransitioning states.
-- [ ] create context-sensitive / selection-sensitive transitions.  
+- [ ] create context-sensitive / selection-sensitive transitions.
+- [ ] add startup dependency check that calls `--version` cli-commands and parses and verifies an installed version of a cli tool.  
