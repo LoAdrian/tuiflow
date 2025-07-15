@@ -77,7 +77,7 @@ states: # the states of the app
 
 ## Planned Features
 - [x] Basic regex state transitions.  
-- [ ] hide parts of a displayed line by tagging it in the regex or alternatively make the transitions receive the lines without the `line_display_pattern` mask.  
+- [ ] carry all captured variables in states, not just the displayed ones so that flows can carry hidden values across states.  
 - [ ] allow multiple actions with the same key on the same transition but with different regex, choosing the first matching action.  
 - [ ] add an input-state-type that allows the user to input something instead of just selecting lines.  
 - [ ] add versions to the flow file and create a compatibility list.  
