@@ -3,13 +3,14 @@ use std::env;
 use std::fs::File;
 use tuiflow_app::App;
 use tuiflow_app::configuration::AppConfiguration;
+use tuiflow_sh::sh_command_runner::ShCommandRunner;
 
 pub fn main() -> eyre::Result<()> {
     let tuiflow_config_path = read_config_path_or_print_err()?;
     let config = read_config_or_print_err(tuiflow_config_path)?;
 
     let terminal = ratatui::init();
-    App::new(config)?.run(terminal)?;
+    App::<ShCommandRunner>::new(config)?.run(terminal)?;
     ratatui::restore();
     Ok(())
 }

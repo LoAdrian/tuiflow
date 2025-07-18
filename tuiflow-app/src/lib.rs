@@ -3,13 +3,13 @@ use crossterm::event;
 use crossterm::event::Event;
 use ratatui::{DefaultTerminal, Frame};
 use ratatui::widgets::StatefulWidgetRef;
+use tuiflow_model::command_runner::CommandRunner;
 use tuiflow_model::Control;
 use tuiflow_model::control::Key;
 use tuiflow_model::variable_mapping::RegexVariableMapper;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_ui::io;
 use tuiflow_ui::io::InputUpdatedViewModel;
-use tuiflow_ui::io::sh_command_runner::ShCommandRunner;
 use tuiflow_ui::main_widget::{MainState, MainViewModel, MainWidget};
 use crate::configuration::AppConfiguration;
 use crate::factory::WorkflowFactory;
@@ -19,13 +19,13 @@ pub mod configuration;
 mod factory;
 mod state;
 
-pub struct App {
+pub struct App<R: CommandRunner> {
     app_state: AppState,
     quit_control: Control,
-    workflow: Workflow<ShCommandRunner, RegexVariableMapper>,
+    workflow: Workflow<R, RegexVariableMapper>,
 }
 
-impl App {
+impl<R: CommandRunner> App<R> {
     pub fn new(configuration: AppConfiguration) -> eyre::Result<Self> {
         let quit_control = configuration.controls.quit.clone();
         let workflow = WorkflowFactory::build_from_configuration(configuration)?;

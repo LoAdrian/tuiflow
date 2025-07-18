@@ -6,7 +6,7 @@ use super::{control::Key, transition::DisplayToCommandMappingError};
 pub enum StateTransitionError {
     SelectionToCommandMappingFailed(DisplayToCommandMappingError),
     ControlNotFound(Key),
-    CliCommandExecutionFailed(String),
+    CommandExecutionFailed(String),
 }
 
 impl Display for StateTransitionError {
@@ -18,7 +18,7 @@ impl Display for StateTransitionError {
             StateTransitionError::ControlNotFound(control) => {
                 write!(f, "Control not found: {control}")
             }
-            StateTransitionError::CliCommandExecutionFailed(command) => {
+            StateTransitionError::CommandExecutionFailed(command) => {
                 write!(f, "CLI command execution failed: {command}")
             }
         }

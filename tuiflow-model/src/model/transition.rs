@@ -27,14 +27,14 @@ impl<R: CommandRunner, M: VariableMapper> Transition<R, M> {
     pub fn get_transition_command(
         &self,
         input: Option<&str>,
-    ) -> Result<String, DisplayToCommandMappingError> {
+    ) -> Result<R::Command, DisplayToCommandMappingError> {
         let result = self
             .selected_display_to_command
             .map(input.map_or("", |s| s))
             .nth(0);
 
         match result {
-            Some(Ok(command)) => Ok(command),
+            Some(Ok(command)) => Ok(command.into()),
             Some(Err(e)) => Err(DisplayToCommandMappingError::VariableMappingError(e)),
             None => Err(DisplayToCommandMappingError::NoMatchFound),
         }

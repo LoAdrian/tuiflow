@@ -1,15 +1,15 @@
-use std::{
-    cell::{BorrowMutError, RefCell},
-    collections::HashMap,
-    rc::Rc,
-};
-use crate::command_runner::CommandRunner;
 use super::{
     control::{Control, Key},
     display::{Display, Line},
     error::StateTransitionError,
     transition::Transition,
     variable_mapping::VariableMapper,
+};
+use crate::command_runner::CommandRunner;
+use std::{
+    cell::{BorrowMutError, RefCell},
+    collections::HashMap,
+    rc::Rc,
 };
 
 pub mod builder;
@@ -51,32 +51,32 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
     ) -> Result<Rc<RefCell<State<R, M>>>, StateTransitionError> {
         if let Some(transition) = self.transitions.get(key) {
             let transition_command = transition.get_transition_command(input);
-            if let Ok(command_to_execute) = transition_command {
-                let cli_result = self.command_runner.run_command(&command_to_execute);
-                if let Ok(cli_output) = cli_result {
-                    let next_state = transition.get_next_state();
-                    _ = next_state
-                        .try_borrow_mut() //TODO: fix this hack
-                        .and_then(|mut next_state| {
-                            next_state.display(&cli_output);
-                            Ok(())
-                        })
-                        .or_else(|_| {
-                            // Next state is this state
-                            self.display(&cli_output);
-                            Ok::<_, BorrowMutError>(())
-                        });
-                    Ok(next_state.clone())
-                } else {
-                    Err(StateTransitionError::CliCommandExecutionFailed(
-                        command_to_execute.clone(),
-                    ))
+            match transition_command {
+                Ok(command_to_execute) => {
+                    let cli_result = self.command_runner.run_command(&command_to_execute);
+                    if let Ok(cli_output) = cli_result {
+                        let next_state = transition.get_next_state();
+                        _ = next_state
+                            .try_borrow_mut() //TODO: fix this hack
+                            .and_then(|mut next_state| {
+                                next_state.display(&cli_output);
+                                Ok(())
+                            })
+                            .or_else(|_| {
+                                // Next state is this state
+                                self.display(&cli_output);
+                                Ok::<_, BorrowMutError>(())
+                            });
+                        Ok(next_state.clone())
+                    } else {
+                        Err(StateTransitionError::CommandExecutionFailed(
+                            command_to_execute.to_string(),
+                        ))
+                    }
                 }
-            } else {
-                let transition_error = transition_command.unwrap_err();
-                Err(StateTransitionError::SelectionToCommandMappingFailed(
-                    transition_error,
-                ))
+                Err(transition_error) => Err(
+                    StateTransitionError::SelectionToCommandMappingFailed(transition_error),
+                ),
             }
         } else {
             Err(StateTransitionError::ControlNotFound(*key))
@@ -129,7 +129,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
 #[cfg(test)]
 mod state_tests {
     use std::{cell::RefCell, rc::Rc};
-
+    use crate::command_runner::CommandRunner;
     use crate::model::command_runner::{CommandRunnerError, MockCommandRunner};
     use crate::model::state::State;
     use crate::model::transition::{DisplayToCommandMappingError, Transition};
@@ -184,7 +184,7 @@ mod state_tests {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap(),
-            StateTransitionError::CliCommandExecutionFailed("TEST".to_string())
+            StateTransitionError::CommandExecutionFailed("TEST".to_string())
         )
     }
 
