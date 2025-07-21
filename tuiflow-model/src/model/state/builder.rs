@@ -46,7 +46,6 @@ impl<R: CommandRunner + Clone, M: VariableMapper> StateBuilder<R, M> {
     }
 
     pub fn build(&self) -> State<R, M> {
-        // Consume self. Force clone(). Implies that clone is called on underlying types.
         State::new(
             self.display_name
                 .as_ref()
