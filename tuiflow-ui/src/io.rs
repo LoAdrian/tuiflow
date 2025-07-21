@@ -1,5 +1,4 @@
 pub mod key_event_to_model_mapping;
-pub mod sh_command_runner;
 
 use tuiflow_model::TerminalFlow;
 use tuiflow_model::control::Key;

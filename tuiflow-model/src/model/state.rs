@@ -129,7 +129,7 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
 #[cfg(test)]
 mod state_tests {
     use std::{cell::RefCell, rc::Rc};
-    use crate::command_runner::CommandRunner;
+    pub use crate::command_runner::CommandRunner;
     use crate::model::command_runner::{CommandRunnerError, MockCommandRunner};
     use crate::model::state::State;
     use crate::model::transition::{DisplayToCommandMappingError, Transition};
@@ -271,7 +271,7 @@ mod state_tests {
     }
 
     fn get_mock_command_runner(result: Result<String, CommandRunnerError>) -> MockCommandRunner {
-        let mut mock_command_runner = MockCommandRunner::new();
+        let mut mock_command_runner = MockCommandRunner::default();
         let result_recurse = result.clone();
         mock_command_runner
             .expect_run_command()
