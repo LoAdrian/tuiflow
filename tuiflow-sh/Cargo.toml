@@ -5,6 +5,3 @@ edition = "2024"
 
 [dependencies]
 tuiflow-model-contracts = {path = "../tuiflow-model-contracts"}
-
-[lib]
-crate-type = ["dylib"]
