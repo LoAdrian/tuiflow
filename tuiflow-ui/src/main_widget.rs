@@ -1,12 +1,12 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
 use tuiflow_model::{Control, TerminalFlow};
+use tuiflow_model::command_runner::CommandRunner;
 use tuiflow_model::control::Key;
 use tuiflow_model::variable_mapping::RegexVariableMapper;
 use tuiflow_model::workflow::Workflow;
 use crate::body::{BodyState, BodyViewModel, BodyWidget};
 use crate::controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL};
 use crate::io::InputUpdatedViewModel;
-use crate::io::sh_command_runner::ShCommandRunner;
 use crate::title_bar_widget::{TitleBarViewModel, TitleBarWidget};
 
 pub struct MainWidget<'a> {
@@ -54,7 +54,7 @@ pub struct MainViewModel {
 }
 
 impl MainViewModel {
-    pub fn new(workflow: &Workflow<ShCommandRunner, RegexVariableMapper>, selection_up: Control, selection_down: Control) -> Self {
+    pub fn new<R: CommandRunner>(workflow: &Workflow<R, RegexVariableMapper>, selection_up: Control, selection_down: Control) -> Self {
         let display = workflow.get_display().clone();
         let select_up_key = selection_up.get_key();
         let select_down_key = selection_down.get_key();

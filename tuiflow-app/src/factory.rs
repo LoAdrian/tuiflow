@@ -1,4 +1,3 @@
-use tuiflow_ui::io::sh_command_runner::ShCommandRunner;
 use tuiflow_model::state::builder::StateBuilder;
 use tuiflow_model::state::State;
 use tuiflow_model::transition::builder::TransitionBuilder;
@@ -9,16 +8,17 @@ use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use tuiflow_model::command_runner::CommandRunner;
 use crate::configuration::AppConfiguration;
 
 pub struct WorkflowFactory {}
 
 impl WorkflowFactory {
-    pub fn build_from_configuration(
+    pub fn build_from_configuration<R: CommandRunner>(
         app_config: AppConfiguration,
-    ) -> eyre::Result<Workflow<ShCommandRunner, RegexVariableMapper>> {
+    ) -> eyre::Result<Workflow<R, RegexVariableMapper>> {
         let states: Result<
-            HashMap<String, Rc<RefCell<State<ShCommandRunner, RegexVariableMapper>>>>,
+            HashMap<String, Rc<RefCell<State<R, RegexVariableMapper>>>>,
             VariableMapperCompilationError,
         > = app_config
             .states
@@ -81,19 +81,19 @@ impl WorkflowFactory {
             RegexVariableMapper::new("", app_config.initial_command.as_str())?;
 
         Ok(WorkflowBuilder::new()
-            .with_command_runner(ShCommandRunner)
+            .with_command_runner(R::new())
             .with_initial_state(&initial_state)
             .with_app_title(app_config.app_title.as_str())
             .with_initial_display_to_command_mapper(initial_command_mapper)
             .build())
     }
 
-    fn build_state(
+    fn build_state<R: CommandRunner>(
         line_filter: &str,
         line_display_pattern: &str,
         name: &str,
     ) -> Result<
-        Rc<RefCell<State<ShCommandRunner, RegexVariableMapper>>>,
+        Rc<RefCell<State<R, RegexVariableMapper>>>,
         VariableMapperCompilationError,
     > {
         let variable_mapper = RegexVariableMapper::new(line_filter, line_display_pattern)?;
@@ -101,7 +101,7 @@ impl WorkflowFactory {
             StateBuilder::new()
                 .with_command_output_to_display_mapper(variable_mapper)
                 .with_display_name(name.to_string())
-                .with_command_runner(ShCommandRunner)
+                .with_command_runner(R::new())
                 .build(),
         )))
     }
