@@ -1,5 +1,6 @@
 use std::ops::Deref;
 
+#[repr(C)]
 pub struct ShCommand {
     command: String,
 }

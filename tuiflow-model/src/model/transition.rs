@@ -1,6 +1,6 @@
 use crate::model::variable_mapping::{VariableMapper, VariableMappingError};
 use std::{cell::RefCell, fmt::Display, rc::Rc};
-use crate::command_runner::CommandRunner;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 use super::{control::Control, state::State};
 
 pub mod builder;

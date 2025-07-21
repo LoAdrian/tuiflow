@@ -4,10 +4,10 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, Paragraph, WidgetRef},
 };
 use tuiflow_model::{Control, TerminalFlow};
-use tuiflow_model::command_runner::CommandRunner;
 use tuiflow_model::control::Key;
 use tuiflow_model::variable_mapping::RegexVariableMapper;
 use tuiflow_model::workflow::Workflow;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 use crate::io::InputUpdatedViewModel;
 use crate::key_control_view_model::KeyControlViewModel;
 

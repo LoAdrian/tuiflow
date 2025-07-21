@@ -1,9 +1,9 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
 use tuiflow_model::{Control, TerminalFlow};
-use tuiflow_model::command_runner::CommandRunner;
 use tuiflow_model::control::Key;
 use tuiflow_model::variable_mapping::RegexVariableMapper;
 use tuiflow_model::workflow::Workflow;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 use crate::body::{BodyState, BodyViewModel, BodyWidget};
 use crate::controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL};
 use crate::io::InputUpdatedViewModel;

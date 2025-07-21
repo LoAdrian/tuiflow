@@ -5,12 +5,12 @@ use super::{
     transition::Transition,
     variable_mapping::VariableMapper,
 };
-use crate::command_runner::CommandRunner;
 use std::{
     cell::{BorrowMutError, RefCell},
     collections::HashMap,
     rc::Rc,
 };
+use tuiflow_model_contracts::command_runner::CommandRunner;
 
 pub mod builder;
 
@@ -129,8 +129,8 @@ impl<R: CommandRunner, M: VariableMapper> State<R, M> {
 #[cfg(test)]
 mod state_tests {
     use std::{cell::RefCell, rc::Rc};
-    pub use crate::command_runner::CommandRunner;
-    use crate::model::command_runner::{CommandRunnerError, MockCommandRunner};
+    pub use tuiflow_model_contracts::command_runner::CommandRunner;
+    use tuiflow_model_contracts::command_runner::{CommandRunnerError, MockCommandRunner};
     use crate::model::state::State;
     use crate::model::transition::{DisplayToCommandMappingError, Transition};
     use crate::model::{

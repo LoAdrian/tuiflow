@@ -1,5 +1,5 @@
+use tuiflow_model_contracts::command_runner::{CommandRunner, CommandRunnerError};
 use std::process::Command;
-use tuiflow_model::command_runner::{CommandRunner, CommandRunnerError};
 use crate::sh_command::ShCommand;
 
 #[derive(Clone)]

@@ -11,3 +11,4 @@ serde_yaml = "0.9.33"
 crossterm = "0.29.0"
 ratatui = { version = "0.29.0", features = ["unstable-widget-ref"]}
 eyre = "0.6.12"
+tuiflow-model-contracts = { path = "../tuiflow-model-contracts" }

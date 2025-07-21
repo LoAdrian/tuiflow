@@ -8,7 +8,7 @@ use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use tuiflow_model::command_runner::CommandRunner;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 use crate::configuration::AppConfiguration;
 
 pub struct WorkflowFactory {}

@@ -683,6 +683,7 @@ dependencies = [
  "serde",
  "serde_yaml",
  "tuiflow-model",
+ "tuiflow-model-contracts",
  "tuiflow-ui",
 ]
 
@@ -693,13 +694,21 @@ dependencies = [
  "mockall",
  "regex",
  "serde",
+ "tuiflow-model-contracts",
+]
+
+[[package]]
+name = "tuiflow-model-contracts"
+version = "0.1.0"
+dependencies = [
+ "mockall",
 ]
 
 [[package]]
 name = "tuiflow-sh"
 version = "0.1.0"
 dependencies = [
- "tuiflow-model",
+ "tuiflow-model-contracts",
 ]
 
 [[package]]
@@ -709,6 +718,7 @@ dependencies = [
  "crossterm 0.29.0",
  "ratatui",
  "tuiflow-model",
+ "tuiflow-model-contracts",
 ]
 
 [[package]]

@@ -1,4 +1,4 @@
-workspace = { members = [ "tuiflow-app", "tuiflow-model", "tuiflow-ui", "tuiflow-sh"] }
+workspace = { members = [ "tuiflow-app", "tuiflow-model", "tuiflow-ui", "tuiflow-sh", "tuiflow-model-contracts"] }
 
 [package]
 name = "tuiflow"

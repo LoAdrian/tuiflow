@@ -5,7 +5,6 @@ pub mod state;
 pub mod transition;
 pub mod variable_mapping;
 pub mod workflow;
-pub mod command_runner;
 
 use std::cell::Ref;
 

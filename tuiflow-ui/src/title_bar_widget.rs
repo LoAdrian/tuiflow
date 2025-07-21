@@ -1,9 +1,9 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
-use tuiflow_model::command_runner::CommandRunner;
 use tuiflow_model::control::Key;
 use tuiflow_model::TerminalFlow;
 use tuiflow_model::variable_mapping::RegexVariableMapper;
 use tuiflow_model::workflow::Workflow;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 use crate::io::InputUpdatedViewModel;
 
 #[derive(Clone)]

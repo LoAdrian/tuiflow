@@ -1,5 +1,5 @@
 use std::{cell::RefCell, rc::Rc};
-use crate::command_runner::CommandRunner;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 use crate::Control;
 use crate::state::State;
 use crate::transition::Transition;

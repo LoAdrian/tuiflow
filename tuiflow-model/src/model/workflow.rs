@@ -12,7 +12,7 @@ use std::{
     cell::{Ref, RefCell},
     rc::Rc,
 };
-use crate::command_runner::CommandRunner;
+use tuiflow_model_contracts::command_runner::CommandRunner;
 
 pub mod builder;
 

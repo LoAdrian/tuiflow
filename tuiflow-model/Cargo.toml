@@ -7,3 +7,4 @@ edition = "2021"
 mockall = "0.13.1"
 serde = { version = "1.0.219", features = ["derive"] }
 regex = "1.11.1"
+tuiflow-model-contracts = { path = "../tuiflow-model-contracts" }
