@@ -43,15 +43,16 @@ controls: # the controls usable to control the flow
       key: !Char 'l'
 initial_command: ls -d -1 "$PWD/"** # the command that will be run to get the initial lines to display
 initial_state: show_files # the state that will be shown first
+initial_cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
 states: # the states of the app
   show_files: # the name of the state
     transitions: # the transitions that can be triggered in this state
       - control_name: moveinto # the name of the control that will trigger this transition
-        selection_filter: (?<x>.*) # the regex that will match the selected display-line (here the whole line)
+        cli_output_variable_set_extractor: (?<x>.*) # the regex that will match the selected display-line (here the whole line)
         command_pattern: ls -d -1 "<x>/"** # the command that will be run when this transition is triggered (the <x> will be replaced by the matched group of the selection_filter)
         next_state: show_files # the target state of the transition
       - control_name: moveback
-        selection_filter: (?<x>.*)\/.*\/.*
+        cli_output_variable_set_extractor: (?<x>.*)\/.*\/.*
         command_pattern: ls -d -1 "<x>/"**
         next_state: show_files
     line_filter: (?<path>.+) # the regex for the line_display_pattern
@@ -77,7 +78,7 @@ states: # the states of the app
 
 ## Planned Features
 - [x] Basic regex state transitions.  
-- [ ] carry all captured variables in states, not just the displayed ones so that flows can carry hidden values across states.  
+- [x] carry all captured variables in states, not just the displayed ones so that flows can carry hidden values across states.  
 - [ ] allow multiple actions with the same key on the same transition but with different regex, choosing the first matching action.  
 - [ ] add an input-state-type that allows the user to input something instead of just selecting lines.  
 - [ ] add versions to the flow file and create a compatibility list.  
