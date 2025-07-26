@@ -1,4 +1,4 @@
-use tuiflow_model::control::Key;
+use tuiflow_model_contracts::control::Key;
 use tuiflow_model::Control;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -9,13 +9,13 @@ pub struct AppConfiguration {
     pub controls: ControlsConfiguration,
     pub initial_command: String,
     pub initial_state: String,
+    pub initial_line_filter: String,
     pub states: HashMap<String, StateConfiguration>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct StateConfiguration {
     pub transitions: Vec<TransitionConfiguration>,
-    pub line_filter: String,
     pub line_display_pattern: String,
 }
 
@@ -48,7 +48,7 @@ impl Default for ControlsConfiguration {
 
 #[cfg(test)]
 mod tests {
-    use tuiflow_model::control::Key;
+    use tuiflow_model_contracts::control::Key;
     use tuiflow_model::Control;
     use std::collections::HashMap;
     use crate::configuration::{AppConfiguration, ControlsConfiguration, StateConfiguration, TransitionConfiguration};

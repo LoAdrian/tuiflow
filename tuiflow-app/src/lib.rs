@@ -4,8 +4,8 @@ use crossterm::event::Event;
 use ratatui::{DefaultTerminal, Frame};
 use ratatui::widgets::StatefulWidgetRef;
 use tuiflow_model::Control;
-use tuiflow_model::control::Key;
-use tuiflow_model::variable_mapping::RegexVariableMapper;
+use tuiflow_model_contracts::control::Key;
+use tuiflow_model::variable_mapping::RegexVariableExtractor;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model_contracts::command_runner::CommandRunner;
 use tuiflow_ui::io;
@@ -22,7 +22,7 @@ mod state;
 pub struct App<R: CommandRunner> {
     app_state: AppState,
     quit_control: Control,
-    workflow: Workflow<R, RegexVariableMapper>,
+    workflow: Workflow<R, RegexVariableExtractor>,
 }
 
 impl<R: CommandRunner> App<R> {

@@ -702,6 +702,7 @@ name = "tuiflow-model-contracts"
 version = "0.1.0"
 dependencies = [
  "mockall",
+ "serde",
 ]
 
 [[package]]

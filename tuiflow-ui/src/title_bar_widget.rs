@@ -1,9 +1,9 @@
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
-use tuiflow_model::control::Key;
-use tuiflow_model::TerminalFlow;
-use tuiflow_model::variable_mapping::RegexVariableMapper;
+use tuiflow_model_contracts::control::Key;
+use tuiflow_model::variable_mapping::RegexVariableExtractor;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model_contracts::command_runner::CommandRunner;
+use tuiflow_model_contracts::terminal_flow::TerminalFlow;
 use crate::io::InputUpdatedViewModel;
 
 #[derive(Clone)]
@@ -63,7 +63,7 @@ pub struct TitleBarViewModel {
 }
 
 impl <'a> TitleBarViewModel {
-    pub fn new<R: CommandRunner>(workflow: &Workflow<R, RegexVariableMapper>) -> Self {
+    pub fn new<R: CommandRunner>(workflow: &Workflow<R, RegexVariableExtractor>) -> Self {
         Self {
             app_title: workflow.get_app_title().to_string(),
             state_title: workflow.get_state_title().to_string(),

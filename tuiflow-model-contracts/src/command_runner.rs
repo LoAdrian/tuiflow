@@ -44,7 +44,7 @@ mock! {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CommandRunnerError {
     pub command: String,
 }

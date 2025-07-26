@@ -1,4 +1,4 @@
-use tuiflow_model::control::Key;
+use tuiflow_model_contracts::control::Key;
 
 pub enum AppState {
     Running,

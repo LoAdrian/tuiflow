@@ -18,16 +18,16 @@ controls:
       key: !Char 'l'
 initial_command: ls -d -1 "$PWD/"**
 initial_state: show_files
+initial_line_filter: (?<path>.+)
 states:
   show_files:
+    line_display_pattern: <path>
     transitions:
       - control_name: moveinto
-        selection_filter: (?<x>.*)
-        command_pattern: ls -d -1 "<x>/"**
+        selection_filter: (?<path>.*)
+        command_pattern: ls -d -1 "<path>/"**
         next_state: show_files
       - control_name: moveback
-        selection_filter: (?<x>.*)\/.*\/.*
-        command_pattern: ls -d -1 "<x>/"**
+        selection_filter: (?<path>.*)\/.*\/.*
+        command_pattern: ls -d -1 "<path>/"**
         next_state: show_files
-    line_filter: (?<path>.+)
-    line_display_pattern: <path>

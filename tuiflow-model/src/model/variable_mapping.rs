@@ -1,25 +1,10 @@
-mod error;
-mod variable_mapper;
+mod variable_extractor;
+mod variable_injector;
 
-pub use error::{VariableMapperCompilationError, VariableMappingError};
-use mockall::mock;
-pub use variable_mapper::RegexVariableMapper;
+use crate::model::variable::VariableSet;
+pub use variable_extractor::RegexVariableExtractor;
+pub use variable_injector::VariableInjector;
 
-pub trait VariableMapper: Clone {
-    fn map(&self, input: &str) -> impl Iterator<Item = Result<String, VariableMappingError>>;
-    fn identity() -> Self;
-}
-
-mock! {
-    #[derive(Clone)]
-    pub(crate) VariableMapper{}
-
-    impl Clone for VariableMapper{
-        fn clone(&self) -> Self;
-    }
-
-    impl VariableMapper for VariableMapper{
-        fn map(&self, input: &str) -> impl Iterator<Item = Result<String, VariableMappingError>>;
-        fn identity() -> Self;
-    }
+pub trait VariableExtractor: Clone {
+    fn parse(&self, input: &str) -> Vec<VariableSet>;
 }
