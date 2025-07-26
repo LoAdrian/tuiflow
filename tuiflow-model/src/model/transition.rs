@@ -38,14 +38,14 @@ impl<R: CommandRunner, M: VariableExtractor> Transition<R, M> {
         &self,
         variables: &VariableSet,
     ) -> Result<R::Command, VariableMappingError> {
-         self.variable_set_command_filler.fill(variables).map(|command| command.into())
+         self.variable_set_command_filler.inject(variables).map(|command| command.into())
     }
 
     fn run_command(&self, command_to_execute: &<R as CommandRunner>::Command) -> Result<State<R, M>, StateTransitionError> {
         let cli_result = self.command_runner.run_command(&command_to_execute)
             .map_err(|e| StateTransitionError::CommandExecutionError(e))?;
         
-        let variables = self.cli_output_variable_extractor.parse(&cli_result);
+        let variables = self.cli_output_variable_extractor.extract(&cli_result);
         Ok(State::new(Rc::clone(&self.next_state), variables))
     }
 

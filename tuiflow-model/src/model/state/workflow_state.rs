@@ -64,7 +64,7 @@ impl<R: CommandRunner, M: VariableExtractor> WorkflowState<R, M> {
             .iter()
             .filter_map(|set| {
                 self.command_output_to_display
-                    .fill(set)
+                    .inject(set)
                     .ok()
                     .map(|content| content.into())
             })
@@ -74,7 +74,7 @@ impl<R: CommandRunner, M: VariableExtractor> WorkflowState<R, M> {
             .iter()
             .filter_map(|set| {
                 self.command_output_to_display
-                    .fill(set)
+                    .inject(set)
                     .err()
                     .map(|err| DisplayError(format!("Error: {}", err)))
             })

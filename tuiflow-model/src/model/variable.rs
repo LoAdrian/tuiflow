@@ -30,6 +30,12 @@ impl From<String> for VariableName {
     }
 }
 
+impl From<&str> for VariableName {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct VariableSet(HashSet<Variable>);
 
