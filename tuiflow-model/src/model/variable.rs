@@ -33,6 +33,12 @@ impl From<String> for VariableName {
 #[derive(Clone, Debug)]
 pub struct VariableSet(HashSet<Variable>);
 
+impl VariableSet {
+    pub fn empty() -> Self {
+        Self(HashSet::new())
+    }
+}
+
 impl Deref for VariableSet {
     type Target = HashSet<Variable>;
 

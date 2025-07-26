@@ -121,7 +121,7 @@ impl BodyState {
         self.list_state.select(Some(0));
     }
 
-    pub fn get_selected_line_index(&self) -> usize {
-        self.list_state.selected().unwrap_or(0)
+    pub fn get_selected_line_index(&self) -> Option<usize> {
+        self.list_state.selected()
     }
 }

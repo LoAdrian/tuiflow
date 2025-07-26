@@ -1,5 +1,6 @@
 use crate::model::variable::VariableSet;
 use std::ops::Deref;
+use regex::Regex;
 use tuiflow_model_contracts::error::VariableMappingError;
 
 #[derive(Clone, Debug)]
@@ -17,9 +18,7 @@ impl VariableInjector {
    pub(crate) fn fill(&self, variables: &VariableSet) -> Result<String, VariableMappingError> {
        let mut result = self.output_pattern.clone();
        variables.iter().for_each(|var| result = result.replace(format!("<{}>", var.name.deref()).as_str(), var.value.as_str()));
-       if result.contains("<") {
-           return Err(VariableMappingError);
-       }
-       Ok(result) 
+       result = Regex::new("<.*>").unwrap().replace_all(result.as_str(), "").to_string();
+       Ok(result)
    }
 }

@@ -38,7 +38,7 @@ impl<R: CommandRunner, M: VariableExtractor> Workflow<R, M> {
 impl<R: CommandRunner, M: VariableExtractor> TerminalFlow for Workflow<R, M> {
     fn run_control(
         &mut self,
-        display_selection_index: usize,
+        display_selection_index: Option<usize>,
         key: &Key,
     ) -> Result<(), StateTransitionError> {
         let transition_result: Result<State<R, M>, StateTransitionError>;

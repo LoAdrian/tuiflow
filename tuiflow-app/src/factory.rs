@@ -37,7 +37,7 @@ impl WorkflowFactory {
                     ))?;
 
                 let variable_extractor =
-                    RegexVariableExtractor::new(transition_config.selection_filter.as_str())?;
+                    RegexVariableExtractor::new(transition_config.cli_output_variable_set_extractor.as_str())?;
                 let transition = Transition::new(
                     transition_control.clone(),
                     states
@@ -70,7 +70,7 @@ impl WorkflowFactory {
             initial_state.clone(),
             VariableInjector::new(app_config.initial_command.clone()),
             R::new(),
-            RegexVariableExtractor::new(app_config.initial_line_filter.as_str())?,
+            RegexVariableExtractor::new(app_config.initial_cli_output_variable_set_extractor.as_str())?,
         );
         let initializer_state = WorkflowState::new(
             "INIT",
