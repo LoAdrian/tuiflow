@@ -5,7 +5,7 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     widgets::{Block, BorderType, Borders, Paragraph, WidgetRef},
 };
-use tuiflow_model::state::Transition;
+use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model_contracts::control::{Control, Key};
 use tuiflow_model_contracts::terminal_flow::TerminalFlow;
@@ -76,7 +76,7 @@ pub struct ControlsViewModel {
 }
 
 impl ControlsViewModel {
-    pub fn new<T: Transition>(
+    pub fn new<T: Transit>(
         workflow: &Workflow<T>,
         selection_up: Control,
         selection_down: Control,

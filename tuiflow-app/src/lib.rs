@@ -6,7 +6,7 @@ use crossterm::event::Event;
 use ratatui::widgets::StatefulWidgetRef;
 use ratatui::{DefaultTerminal, Frame};
 use std::time::Duration;
-use tuiflow_model::state::Transition;
+use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model::Control;
 use tuiflow_model_contracts::control::Key;
@@ -18,7 +18,7 @@ pub mod configuration;
 pub mod factory;
 mod state;
 
-pub struct App<T: Transition, F: ConstructWorkflow<T>> {
+pub struct App<T: Transit, F: ConstructWorkflow<T>> {
     app_state: AppState,
     up_control: Control,
     down_control: Control,
@@ -26,7 +26,7 @@ pub struct App<T: Transition, F: ConstructWorkflow<T>> {
     _phantom: std::marker::PhantomData<F>,
 }
 
-impl<T: Transition, F: ConstructWorkflow<T>> App<T, F> {
+impl<T: Transit, F: ConstructWorkflow<T>> App<T, F> {
     pub fn new(configuration: AppConfiguration) -> eyre::Result<Self> {
         let quit_control = configuration.controls.quit.clone();
         let up_control = configuration.controls.selection_up.clone();

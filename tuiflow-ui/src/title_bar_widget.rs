@@ -1,6 +1,6 @@
 use crate::io::InputUpdatedViewModel;
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
-use tuiflow_model::state::Transition;
+use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model_contracts::control::Key;
 use tuiflow_model_contracts::terminal_flow::TerminalFlow;
@@ -62,7 +62,7 @@ pub struct TitleBarViewModel {
 }
 
 impl <'a> TitleBarViewModel {
-    pub fn new<T: Transition>(workflow: &Workflow<T>) -> Self {
+    pub fn new<T: Transit>(workflow: &Workflow<T>) -> Self {
         Self {
             app_title: workflow.get_app_title().to_string(),
             state_title: workflow.get_state_title().to_string(),

@@ -7,7 +7,7 @@ use tuiflow_model_contracts::control::Control;
 use tuiflow_model_contracts::error::StateTransitionError;
 use crate::model::variable::VariableSet;
 
-pub trait Transition: Sized {
+pub trait Transit: Sized {
     fn run(
         &self,
         variables: &VariableSet,

@@ -1,6 +1,6 @@
 use crate::model::variable::VariableSet;
 use crate::state::state::State;
-use crate::state::Transition;
+use crate::state::Transit;
 use crate::variable_mapping::VariableInjector;
 use crate::{Control, Display};
 use std::collections::HashMap;
@@ -10,13 +10,13 @@ use tuiflow_model_contracts::error::StateTransitionError;
 use tuiflow_model_contracts::error::StateTransitionError::ControlNotFound;
 
 #[derive(Clone)]
-pub struct WorkflowState<T: Transition> {
+pub struct WorkflowState<T: Transit> {
     display_name: String,
     command_output_to_display: VariableInjector,
     transitions: HashMap<Key, T>,
 }
 
-impl<T: Transition> WorkflowState<T> {
+impl<T: Transit> WorkflowState<T> {
     pub fn new(
         display_name: &str,
         display_variable_injector: VariableInjector,

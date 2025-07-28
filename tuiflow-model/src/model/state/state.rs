@@ -1,6 +1,6 @@
 use crate::model::variable::VariableSet;
 use crate::state::workflow_state::WorkflowState;
-use crate::state::Transition;
+use crate::state::Transit;
 use crate::{Control, Display};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -8,13 +8,13 @@ use tuiflow_model_contracts::control::Key;
 use tuiflow_model_contracts::error::StateTransitionError;
 
 #[derive(Clone)]
-pub struct State<T: Transition> {
+pub struct State<T: Transit> {
     workflow_state: Rc<RefCell<WorkflowState<T>>>,
     display: Display,
     arguments: Vec<VariableSet>,
 }
 
-impl<T: Transition> State<T> {
+impl<T: Transit> State<T> {
     pub fn get_name(&self) -> String {
         self.workflow_state.borrow().get_display_name().to_string()
     }

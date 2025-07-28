@@ -1,16 +1,16 @@
 use crate::model::variable::{Variable, VariableSet};
-use crate::state::{State, Transition, WorkflowState};
+use crate::state::{State, Transit, WorkflowState};
 use tuiflow_model_contracts::control::{Control, Key};
 use tuiflow_model_contracts::display;
 use tuiflow_model_contracts::error::{InitialTransitionError, StateTransitionError};
 use tuiflow_model_contracts::terminal_flow::TerminalFlow;
 
-pub struct Workflow<T: Transition> {
+pub struct Workflow<T: Transit> {
     current_state: State<T>,
     app_title: String,
 }
 
-impl<T: Transition> Workflow<T> {
+impl<T: Transit> Workflow<T> {
     pub fn new(
         initializer_state: WorkflowState<T>,
         app_title: String,
@@ -30,7 +30,7 @@ impl<T: Transition> Workflow<T> {
     }
 }
 
-impl<T: Transition> TerminalFlow for Workflow<T> {
+impl<T: Transit> TerminalFlow for Workflow<T> {
     fn run_control(
         &mut self,
         display_selection_index: Option<usize>,

@@ -3,7 +3,7 @@ use crate::controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_V
 use crate::io::InputUpdatedViewModel;
 use crate::title_bar_widget::{TitleBarViewModel, TitleBarWidget};
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
-use tuiflow_model::state::Transition;
+use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model::Control;
 use tuiflow_model_contracts::control::Key;
@@ -54,7 +54,7 @@ pub struct MainViewModel {
 }
 
 impl MainViewModel {
-    pub fn new<T: Transition>(workflow: &Workflow<T>, selection_up: Control, selection_down: Control) -> Self {
+    pub fn new<T: Transit>(workflow: &Workflow<T>, selection_up: Control, selection_down: Control) -> Self {
         let display = workflow.get_display();
         let select_up_key = selection_up.get_key();
         let select_down_key = selection_down.get_key();

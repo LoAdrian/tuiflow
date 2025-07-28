@@ -3,14 +3,14 @@ use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use tuiflow_model::state::{Transition, WorkflowState};
+use tuiflow_model::state::{Transit, WorkflowState};
 use tuiflow_model::variable_mapping::{RegexVariableExtractor, VariableInjector};
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model::{transition, Control};
 use tuiflow_model_contracts::command_runner::CommandRunner;
 use tuiflow_model_contracts::control::Key;
 
-pub trait ConstructWorkflow<T: Transition> {
+pub trait ConstructWorkflow<T: Transit> {
     fn build_from_configuration(
         app_config: AppConfiguration
     ) -> eyre::Result<Workflow<T>>;

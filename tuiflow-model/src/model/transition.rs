@@ -1,6 +1,6 @@
 use crate::model::variable::VariableSet;
 use crate::model::variable_mapping::VariableExtractor;
-use crate::state;
+use crate::state::Transit;
 use crate::state::State;
 use crate::state::WorkflowState;
 use crate::variable_mapping::VariableInjector;
@@ -17,7 +17,7 @@ pub struct Transition<R: CommandRunner, M: VariableExtractor> {
     command_runner: R,
 }
 
-impl<R: CommandRunner, M: VariableExtractor> state::Transition for Transition<R, M> {
+impl<R: CommandRunner, M: VariableExtractor> Transit for Transition<R, M> {
 
 
     fn run(&self, variables: &VariableSet) -> Result<State<Self>, StateTransitionError> {
