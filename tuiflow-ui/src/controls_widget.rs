@@ -1,15 +1,14 @@
+use crate::io::InputUpdatedViewModel;
+use crate::key_control_view_model::KeyControlViewModel;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
     widgets::{Block, BorderType, Borders, Paragraph, WidgetRef},
 };
-use tuiflow_model_contracts::control::{Control, Key};
-use tuiflow_model::variable_mapping::RegexVariableExtractor;
+use tuiflow_model::state::Transition;
 use tuiflow_model::workflow::Workflow;
-use tuiflow_model_contracts::command_runner::CommandRunner;
+use tuiflow_model_contracts::control::{Control, Key};
 use tuiflow_model_contracts::terminal_flow::TerminalFlow;
-use crate::io::InputUpdatedViewModel;
-use crate::key_control_view_model::KeyControlViewModel;
 
 #[derive(Clone)]
 pub struct ControlsWidget<'a> {
@@ -77,8 +76,8 @@ pub struct ControlsViewModel {
 }
 
 impl ControlsViewModel {
-    pub fn new<R: CommandRunner>(
-        workflow: &Workflow<R, RegexVariableExtractor>,
+    pub fn new<T: Transition>(
+        workflow: &Workflow<T>,
         selection_up: Control,
         selection_down: Control,
     ) -> Self {

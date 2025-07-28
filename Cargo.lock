@@ -670,6 +670,7 @@ dependencies = [
  "ratatui",
  "serde_yaml",
  "tuiflow-app",
+ "tuiflow-model",
  "tuiflow-sh",
 ]
 

@@ -3,6 +3,9 @@ use std::env;
 use std::fs::File;
 use tuiflow_app::App;
 use tuiflow_app::configuration::AppConfiguration;
+use tuiflow_app::factory::WorkflowFactory;
+use tuiflow_model::transition::Transition;
+use tuiflow_model::variable_mapping::RegexVariableExtractor;
 use tuiflow_sh::sh_command_runner::ShCommandRunner;
 
 pub fn main() -> eyre::Result<()> {
@@ -10,7 +13,7 @@ pub fn main() -> eyre::Result<()> {
     let config = read_config_or_print_err(tuiflow_config_path)?;
 
     let terminal = ratatui::init();
-    App::<ShCommandRunner>::new(config)?.run(terminal)?;
+    App::<Transition<ShCommandRunner, RegexVariableExtractor>, WorkflowFactory<ShCommandRunner>>::new(config)?.run(terminal)?;
     ratatui::restore();
     Ok(())
 }

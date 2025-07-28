@@ -1,14 +1,13 @@
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
-use tuiflow_model::{Control};
-use tuiflow_model_contracts::control::Key;
-use tuiflow_model::variable_mapping::RegexVariableExtractor;
-use tuiflow_model::workflow::Workflow;
-use tuiflow_model_contracts::command_runner::CommandRunner;
-use tuiflow_model_contracts::terminal_flow::TerminalFlow;
 use crate::body::{BodyState, BodyViewModel, BodyWidget};
 use crate::controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL};
 use crate::io::InputUpdatedViewModel;
 use crate::title_bar_widget::{TitleBarViewModel, TitleBarWidget};
+use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
+use tuiflow_model::state::Transition;
+use tuiflow_model::workflow::Workflow;
+use tuiflow_model::Control;
+use tuiflow_model_contracts::control::Key;
+use tuiflow_model_contracts::terminal_flow::TerminalFlow;
 
 pub struct MainWidget<'a> {
     title_bar: TitleBarWidget<'a>,
@@ -55,7 +54,7 @@ pub struct MainViewModel {
 }
 
 impl MainViewModel {
-    pub fn new<R: CommandRunner>(workflow: &Workflow<R, RegexVariableExtractor>, selection_up: Control, selection_down: Control) -> Self {
+    pub fn new<T: Transition>(workflow: &Workflow<T>, selection_up: Control, selection_down: Control) -> Self {
         let display = workflow.get_display();
         let select_up_key = selection_up.get_key();
         let select_down_key = selection_down.get_key();

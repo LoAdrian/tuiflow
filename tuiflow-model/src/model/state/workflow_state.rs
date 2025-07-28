@@ -1,33 +1,31 @@
+use crate::model::variable::VariableSet;
+use crate::state::state::State;
+use crate::state::Transition;
+use crate::variable_mapping::VariableInjector;
+use crate::{Control, Display};
+use std::collections::HashMap;
 use tuiflow_model_contracts::control::Key;
 use tuiflow_model_contracts::display::DisplayError;
 use tuiflow_model_contracts::error::StateTransitionError;
 use tuiflow_model_contracts::error::StateTransitionError::ControlNotFound;
-use crate::model::variable::VariableSet;
-use crate::state::state::State;
-use crate::transition::Transition;
-use crate::variable_mapping::VariableInjector;
-use crate::variable_mapping::VariableExtractor;
-use crate::{Control, Display};
-use std::collections::HashMap;
-use tuiflow_model_contracts::command_runner::CommandRunner;
 
 #[derive(Clone)]
-pub struct WorkflowState<R: CommandRunner, M: VariableExtractor> {
+pub struct WorkflowState<T: Transition> {
     display_name: String,
     command_output_to_display: VariableInjector,
-    transitions: HashMap<Key, Transition<R, M>>,
+    transitions: HashMap<Key, T>,
 }
 
-impl<R: CommandRunner, M: VariableExtractor> WorkflowState<R, M> {
+impl<T: Transition> WorkflowState<T> {
     pub fn new(
         display_name: &str,
         display_variable_injector: VariableInjector,
-        transitions: Vec<Transition<R, M>>,
+        transitions: Vec<T>,
     ) -> Self {
         let transition_mapping = transitions
             .into_iter()
-            .map(|t: Transition<R, M>| (t.get_activation_control().get_key(), t))
-            .collect::<HashMap<Key, Transition<R, M>>>();
+            .map(|t: T| (t.get_activation_control().get_key(), t))
+            .collect::<HashMap<Key, T>>();
 
         Self {
             display_name: String::from(display_name),
@@ -36,11 +34,15 @@ impl<R: CommandRunner, M: VariableExtractor> WorkflowState<R, M> {
         }
     }
 
+    pub fn add_transition(&mut self, key: Key, transition: T) {
+        self.transitions.insert(key, transition);
+    }
+
     pub(crate) fn transition(
         &self,
         selected_variable_set: &VariableSet,
         key: &Key,
-    ) -> Result<State<R, M>, StateTransitionError> {
+    ) -> Result<State<T>, StateTransitionError> {
         if let Some(transition) = self.transitions.get(key) {
             transition.run(selected_variable_set)
         } else {
@@ -53,10 +55,6 @@ impl<R: CommandRunner, M: VariableExtractor> WorkflowState<R, M> {
             .iter()
             .map(|(_, transition)| transition.get_activation_control().clone())
             .collect()
-    }
-
-    pub fn add_transition(&mut self, key: Key, transition: Transition<R, M>) {
-        self.transitions.insert(key, transition);
     }
 
     pub(crate) fn get_display(&self, variable_set: &Vec<VariableSet>) -> Display {

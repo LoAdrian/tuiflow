@@ -1,23 +1,18 @@
-
-use super::{
-    variable_mapping::VariableExtractor,
-};
 use crate::model::variable::{Variable, VariableSet};
-use tuiflow_model_contracts::command_runner::CommandRunner;
+use crate::state::{State, Transition, WorkflowState};
 use tuiflow_model_contracts::control::{Control, Key};
 use tuiflow_model_contracts::display;
 use tuiflow_model_contracts::error::{InitialTransitionError, StateTransitionError};
 use tuiflow_model_contracts::terminal_flow::TerminalFlow;
-use crate::state::{State, WorkflowState};
 
-pub struct Workflow<R: CommandRunner, M: VariableExtractor> {
-    current_state: State<R, M>,
+pub struct Workflow<T: Transition> {
+    current_state: State<T>,
     app_title: String,
 }
 
-impl<R: CommandRunner, M: VariableExtractor> Workflow<R, M> {
+impl<T: Transition> Workflow<T> {
     pub fn new(
-        initializer_state: WorkflowState<R, M>,
+        initializer_state: WorkflowState<T>,
         app_title: String,
     ) -> Result<Self, InitialTransitionError> {
         let init_control = initializer_state
@@ -35,13 +30,13 @@ impl<R: CommandRunner, M: VariableExtractor> Workflow<R, M> {
     }
 }
 
-impl<R: CommandRunner, M: VariableExtractor> TerminalFlow for Workflow<R, M> {
+impl<T: Transition> TerminalFlow for Workflow<T> {
     fn run_control(
         &mut self,
         display_selection_index: Option<usize>,
         key: &Key,
     ) -> Result<(), StateTransitionError> {
-        let transition_result: Result<State<R, M>, StateTransitionError>;
+        let transition_result: Result<State<T>, StateTransitionError>;
         {
             transition_result = self.current_state.transition(display_selection_index, key);
         }

@@ -3,21 +3,28 @@ use eyre::OptionExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use tuiflow_model::state::WorkflowState;
-use tuiflow_model::transition::Transition;
+use tuiflow_model::state::{Transition, WorkflowState};
 use tuiflow_model::variable_mapping::{RegexVariableExtractor, VariableInjector};
 use tuiflow_model::workflow::Workflow;
-use tuiflow_model::Control;
+use tuiflow_model::{transition, Control};
 use tuiflow_model_contracts::command_runner::CommandRunner;
 use tuiflow_model_contracts::control::Key;
 
-pub struct WorkflowFactory {}
+pub trait ConstructWorkflow<T: Transition> {
+    fn build_from_configuration(
+        app_config: AppConfiguration
+    ) -> eyre::Result<Workflow<T>>;
+}
 
-impl WorkflowFactory {
-    pub fn build_from_configuration<R: CommandRunner>(
+pub struct WorkflowFactory<R: CommandRunner> {
+    _phantom: std::marker::PhantomData<R>,
+}
+
+impl<R: CommandRunner> ConstructWorkflow<transition::Transition<R, RegexVariableExtractor>> for WorkflowFactory<R> {
+    fn build_from_configuration (
         app_config: AppConfiguration,
-    ) -> eyre::Result<Workflow<R, RegexVariableExtractor>> {
-        let states: HashMap<String, Rc<RefCell<WorkflowState<R, RegexVariableExtractor>>>> =
+    ) -> eyre::Result<Workflow<transition::Transition<R, RegexVariableExtractor>>> {
+        let states: HashMap<String, Rc<RefCell<WorkflowState<transition::Transition<R, RegexVariableExtractor>>>>> =
             app_config
                 .states
                 .iter()
@@ -38,7 +45,7 @@ impl WorkflowFactory {
 
                 let variable_extractor =
                     RegexVariableExtractor::new(transition_config.cli_output_variable_set_extractor.as_str())?;
-                let transition = Transition::new(
+                let transition = transition::Transition::new(
                     transition_control.clone(),
                     states
                         .get(transition_config.next_state.as_str())
@@ -65,7 +72,7 @@ impl WorkflowFactory {
             ))?
             .clone();
 
-        let initial_transition = Transition::new(
+        let initial_transition = transition::Transition::new(
             Control::new("INIT", Key::Backspace),
             initial_state.clone(),
             VariableInjector::new(app_config.initial_command.clone()),
@@ -81,12 +88,15 @@ impl WorkflowFactory {
         Ok(workflow)
     }
 
-    fn build_state<R: CommandRunner>(
+}
+
+impl<R: CommandRunner> WorkflowFactory<R> {
+    fn build_state(
         line_display_pattern: &str,
         name: &str,
-    ) -> Rc<RefCell<WorkflowState<R, RegexVariableExtractor>>> {
+    ) -> Rc<RefCell<WorkflowState<transition::Transition<R, RegexVariableExtractor>>>> {
         let variable_mapper = VariableInjector::new(line_display_pattern.to_string());
-        let state = WorkflowState::<R, RegexVariableExtractor>::new(name, variable_mapper, vec![]);
+        let state = WorkflowState::<transition::Transition<R, RegexVariableExtractor>>::new(name, variable_mapper, vec![]);
         Rc::new(RefCell::new(state))
     }
 }

@@ -1,21 +1,20 @@
 use crate::model::variable::VariableSet;
 use crate::state::workflow_state::WorkflowState;
-use crate::variable_mapping::VariableExtractor;
+use crate::state::Transition;
 use crate::{Control, Display};
 use std::cell::RefCell;
 use std::rc::Rc;
-use tuiflow_model_contracts::command_runner::CommandRunner;
 use tuiflow_model_contracts::control::Key;
 use tuiflow_model_contracts::error::StateTransitionError;
 
 #[derive(Clone)]
-pub struct State<R: CommandRunner, M: VariableExtractor> {
-    workflow_state: Rc<RefCell<WorkflowState<R, M>>>,
+pub struct State<T: Transition> {
+    workflow_state: Rc<RefCell<WorkflowState<T>>>,
     display: Display,
     arguments: Vec<VariableSet>,
 }
 
-impl<R: CommandRunner, M: VariableExtractor> State<R, M> {
+impl<T: Transition> State<T> {
     pub fn get_name(&self) -> String {
         self.workflow_state.borrow().get_display_name().to_string()
     }
@@ -28,7 +27,7 @@ impl<R: CommandRunner, M: VariableExtractor> State<R, M> {
         &self,
         display_selection_index: Option<usize>,
         key: &Key,
-    ) -> Result<State<R, M>, StateTransitionError> {
+    ) -> Result<State<T>, StateTransitionError> {
         let empty_set = VariableSet::empty();
         let variable_set = display_selection_index
             .map(|idx| {
@@ -48,7 +47,7 @@ impl<R: CommandRunner, M: VariableExtractor> State<R, M> {
     }
 
     pub fn new(
-        workflow_state: Rc<RefCell<WorkflowState<R, M>>>,
+        workflow_state: Rc<RefCell<WorkflowState<T>>>,
         arguments: Vec<VariableSet>,
     ) -> Self {
         let display = workflow_state.borrow().get_display(&arguments);

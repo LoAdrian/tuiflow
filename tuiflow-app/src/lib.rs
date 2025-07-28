@@ -1,42 +1,43 @@
 use crate::configuration::AppConfiguration;
-use crate::factory::WorkflowFactory;
+use crate::factory::ConstructWorkflow;
 use crate::state::AppState;
 use crossterm::event;
 use crossterm::event::Event;
 use ratatui::widgets::StatefulWidgetRef;
 use ratatui::{DefaultTerminal, Frame};
 use std::time::Duration;
-use tuiflow_model::variable_mapping::RegexVariableExtractor;
+use tuiflow_model::state::Transition;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model::Control;
-use tuiflow_model_contracts::command_runner::CommandRunner;
 use tuiflow_model_contracts::control::Key;
 use tuiflow_ui::io;
 use tuiflow_ui::io::InputUpdatedViewModel;
 use tuiflow_ui::main_widget::{MainState, MainViewModel, MainWidget};
 
 pub mod configuration;
-mod factory;
+pub mod factory;
 mod state;
 
-pub struct App<R: CommandRunner> {
+pub struct App<T: Transition, F: ConstructWorkflow<T>> {
     app_state: AppState,
     up_control: Control,
     down_control: Control,
-    workflow: Workflow<R, RegexVariableExtractor>,
+    workflow: Workflow<T>,
+    _phantom: std::marker::PhantomData<F>,
 }
 
-impl<R: CommandRunner> App<R> {
+impl<T: Transition, F: ConstructWorkflow<T>> App<T, F> {
     pub fn new(configuration: AppConfiguration) -> eyre::Result<Self> {
         let quit_control = configuration.controls.quit.clone();
         let up_control = configuration.controls.selection_up.clone();
         let down_control = configuration.controls.selection_down.clone();
-        let workflow = WorkflowFactory::build_from_configuration(configuration)?;
+        let workflow = F::build_from_configuration(configuration)?;
         Ok(Self {
             app_state: AppState::Running { quit_control },
             workflow,
             up_control,
             down_control,
+            _phantom: std::marker::PhantomData,
         })
     }
 
