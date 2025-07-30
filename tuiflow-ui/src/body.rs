@@ -6,8 +6,9 @@ use ratatui::{
         Block, BorderType, Borders, List, ListItem, ListState, StatefulWidgetRef, WidgetRef,
     },
 };
-use tuiflow_model::control::Key;
-use tuiflow_model::{Display, TerminalFlow};
+use tuiflow_model_contracts::control::Key;
+use tuiflow_model_contracts::display::Display;
+use tuiflow_model_contracts::terminal_flow::TerminalFlow;
 use crate::io::InputUpdatedViewModel;
 
 // TODO: find a better solution than RefCell for everything mutable
@@ -120,7 +121,7 @@ impl BodyState {
         self.list_state.select(Some(0));
     }
 
-    pub fn get_selected_line_index(&self) -> usize {
-        self.list_state.selected().unwrap_or(0)
+    pub fn get_selected_line_index(&self) -> Option<usize> {
+        self.list_state.selected()
     }
 }

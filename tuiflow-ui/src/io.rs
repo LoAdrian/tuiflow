@@ -1,7 +1,7 @@
 pub mod key_event_to_model_mapping;
 
-use tuiflow_model::TerminalFlow;
-use tuiflow_model::control::Key;
+use tuiflow_model_contracts::control::Key;
+use tuiflow_model_contracts::terminal_flow::TerminalFlow;
 
 pub trait InputUpdatedViewModel {
     type ViewState;

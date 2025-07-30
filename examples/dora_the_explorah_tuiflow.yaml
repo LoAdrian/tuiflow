@@ -16,18 +16,18 @@ controls:
     moveinto:
       name: move into
       key: !Char 'l'
-initial_command: ls -d -1 "$PWD/"**
+initial_command: ls -d -1 "$PWD/"*
 initial_state: show_files
+initial_cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
 states:
   show_files:
+    line_display_pattern: <subfolder>/<file>
     transitions:
       - control_name: moveinto
-        selection_filter: (?<x>.*)
-        command_pattern: ls -d -1 "<x>/"**
+        cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
+        command_pattern: ls -d -1 "<path>/<wd>/<subfolder>/"*
         next_state: show_files
       - control_name: moveback
-        selection_filter: (?<x>.*)\/.*\/.*
-        command_pattern: ls -d -1 "<x>/"**
+        cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
+        command_pattern: ls -d -1 "<path>/"*
         next_state: show_files
-    line_filter: (?<path>.+)
-    line_display_pattern: <path>

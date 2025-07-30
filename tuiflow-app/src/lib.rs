@@ -1,46 +1,51 @@
-use std::time::Duration;
+use crate::configuration::AppConfiguration;
+use crate::factory::ConstructWorkflow;
+use crate::state::AppState;
 use crossterm::event;
 use crossterm::event::Event;
-use ratatui::{DefaultTerminal, Frame};
 use ratatui::widgets::StatefulWidgetRef;
-use tuiflow_model::Control;
-use tuiflow_model::control::Key;
-use tuiflow_model::variable_mapping::RegexVariableMapper;
+use ratatui::{DefaultTerminal, Frame};
+use std::time::Duration;
+use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
-use tuiflow_model_contracts::command_runner::CommandRunner;
+use tuiflow_model::Control;
+use tuiflow_model_contracts::control::Key;
 use tuiflow_ui::io;
 use tuiflow_ui::io::InputUpdatedViewModel;
 use tuiflow_ui::main_widget::{MainState, MainViewModel, MainWidget};
-use crate::configuration::AppConfiguration;
-use crate::factory::WorkflowFactory;
-use crate::state::AppState;
 
 pub mod configuration;
-mod factory;
+pub mod factory;
 mod state;
 
-pub struct App<R: CommandRunner> {
+pub struct App<T: Transit, F: ConstructWorkflow<T>> {
     app_state: AppState,
-    quit_control: Control,
-    workflow: Workflow<R, RegexVariableMapper>,
+    up_control: Control,
+    down_control: Control,
+    workflow: Workflow<T>,
+    _phantom: std::marker::PhantomData<F>,
 }
 
-impl<R: CommandRunner> App<R> {
+impl<T: Transit, F: ConstructWorkflow<T>> App<T, F> {
     pub fn new(configuration: AppConfiguration) -> eyre::Result<Self> {
         let quit_control = configuration.controls.quit.clone();
-        let workflow = WorkflowFactory::build_from_configuration(configuration)?;
+        let up_control = configuration.controls.selection_up.clone();
+        let down_control = configuration.controls.selection_down.clone();
+        let workflow = F::build_from_configuration(configuration)?;
         Ok(Self {
-            app_state: AppState::Running,
+            app_state: AppState::Running { quit_control },
             workflow,
-            quit_control,
+            up_control,
+            down_control,
+            _phantom: std::marker::PhantomData,
         })
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> eyre::Result<()> {
         let mut view_model = MainViewModel::new(
             &self.workflow,
-            Control::new("Select up", Key::Char('k')),
-            Control::new("Select down", Key::Char('j')),
+            self.up_control.clone(),
+            self.down_control.clone(),
         );
         let mut main_widget = MainWidget::new(&view_model);
         let mut main_state = MainState::new();
@@ -64,11 +69,12 @@ impl<R: CommandRunner> App<R> {
         view_model: &MainViewModel,
         state: &MainState,
     ) -> eyre::Result<Option<Key>> {
-        if event::poll(Duration::from_millis(250))? { //TODO: Move to io maybe?
+        if event::poll(Duration::from_millis(250))? {
+            //TODO: Move to io maybe?
             {
                 if let Event::Key(key_event) = event::read()? {
                     let key = io::key_event_to_model_mapping::key_event_to_key(&key_event)?;
-                    self.app_state.update(key.clone());
+                    self.app_state.update(key);
 
                     if view_model.needs_update(state, &self.workflow, &key) {
                         return Ok(Some(key));
@@ -80,10 +86,6 @@ impl<R: CommandRunner> App<R> {
     }
 
     fn update(&mut self, view_model: &mut MainViewModel, state: &mut MainState, key: &Key) {
-        if *key == self.quit_control.get_key() {
-            self.app_state.quit();
-            return;
-        }
         view_model.update(state, &mut self.workflow, &key);
     }
 }

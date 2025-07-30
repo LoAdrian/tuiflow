@@ -1,7 +1,7 @@
-use tuiflow_model::control::Key;
+use tuiflow_model_contracts::control::{Control, Key};
 
 pub enum AppState {
-    Running,
+    Running { quit_control: Control },
     Quitting,
 }
 
@@ -12,15 +12,16 @@ impl AppState {
 
     pub fn is_running(&self) -> bool {
         match self {
-            Self::Running => true,
+            Self::Running{quit_control: _} => true,
             Self::Quitting => false,
         }
     }
 
     pub fn update(&mut self, key: Key) {
-        match key {
-            Key::Char('q') => self.quit(),
-            _ => (),
+        if let Self::Running { quit_control } = self {
+            if key == quit_control.get_key() {
+                self.quit();
+            }
         }
     }
 }

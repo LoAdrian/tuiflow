@@ -12,4 +12,5 @@ ratatui = { version = "0.29.0", features = ["unstable-widget-ref"]}
 eyre = "0.6.12"
 
 tuiflow-app = { path = "./tuiflow-app" }
+tuiflow-model = { path = "./tuiflow-model" }
 tuiflow-sh = { path = "./tuiflow-sh" }
