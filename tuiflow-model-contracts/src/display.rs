@@ -1,14 +1,12 @@
 #[derive(Debug, Clone, PartialEq)]
 pub struct Display { // Make this iterable
     pub lines: Vec<Line>,
-    pub errors: Vec<DisplayError<>>
 }
 
 impl Default for Display {
     fn default() -> Self {
         Self {
             lines: Default::default(),
-            errors: Default::default(),
         }
     }
 }
@@ -27,6 +25,3 @@ impl From<String> for Line {
         Self(value)
     }
 }
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct DisplayError(pub String);

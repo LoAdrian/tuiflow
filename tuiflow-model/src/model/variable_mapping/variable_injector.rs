@@ -1,7 +1,6 @@
 use crate::model::variable::VariableSet;
 use regex::Regex;
 use std::ops::Deref;
-use tuiflow_model_contracts::error::VariableMappingError;
 
 #[derive(Clone, Debug)]
 pub struct VariableInjector {
@@ -13,7 +12,7 @@ impl VariableInjector {
         Self { output_pattern }
     }
 
-    pub(crate) fn inject(&self, variables: &VariableSet) -> Result<String, VariableMappingError> {
+    pub(crate) fn inject(&self, variables: &VariableSet) -> String {
         let mut result = self.output_pattern.clone();
         variables.iter().for_each(|var| {
             result = result.replace(
@@ -21,11 +20,11 @@ impl VariableInjector {
                 var.value.as_str(),
             )
         });
-        result = Regex::new("<.*>")
+        result = Regex::new("<.*>") // TODO: Replace with something more efficient
             .unwrap()
             .replace_all(result.as_str(), "")
             .to_string();
-        Ok(result)
+        result
     }
 }
 
@@ -44,8 +43,7 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "")
+        assert_eq!(result, "")
     }
 
     #[test]
@@ -56,8 +54,7 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "")
+        assert_eq!(result, "")
     }
 
     #[test]
@@ -70,8 +67,7 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "hello/")
+        assert_eq!(result, "hello/")
     }
 
     #[test]
@@ -87,7 +83,6 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "hello/world")
+        assert_eq!(result, "hello/world")
     }
 }

@@ -5,7 +5,6 @@ use crate::variable_mapping::VariableInjector;
 use crate::{Control, Display};
 use std::collections::HashMap;
 use tuiflow_model_contracts::control::Key;
-use tuiflow_model_contracts::display::DisplayError;
 use tuiflow_model_contracts::error::StateTransitionError;
 use tuiflow_model_contracts::error::StateTransitionError::ControlNotFound;
 
@@ -60,28 +59,53 @@ impl<T: Transit> WorkflowState<T> {
     pub(crate) fn get_display(&self, variable_set: &Vec<VariableSet>) -> Display {
         let lines = variable_set
             .iter()
-            .filter_map(|set| {
+            .map(|set| {
                 self.command_output_to_display
                     .inject(set)
-                    .ok()
-                    .map(|content| content.into())
+                    .into()
             })
             .collect();
 
-        let errors = variable_set
-            .iter()
-            .filter_map(|set| {
-                self.command_output_to_display
-                    .inject(set)
-                    .err()
-                    .map(|err| DisplayError(format!("Error: {}", err)))
-            })
-            .collect();
-
-        Display { lines, errors }
+        Display { lines }
     }
 
     pub(crate) fn get_display_name(&self) -> String {
         self.display_name.clone()
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::state::{MockTransit, State, WorkflowState};
+    use crate::variable_mapping::VariableInjector;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+    use tuiflow_model_contracts::control::{Control, Key};
+    use crate::model::variable::VariableSet;
+
+    #[test]
+    fn transition_with_existing_control_runs_transitions() {
+        let mut mock_transition = MockTransit::new();
+        let target_state_display_name = "target state";
+        mock_transition
+            .expect_run()
+            .once()
+            .returning(move |_| {
+                let variable_injector = VariableInjector::new("some pattern".to_string());
+                let target_state = WorkflowState::new(target_state_display_name, variable_injector.clone(), vec![]);
+                Ok(State::new(Rc::new(RefCell::new(target_state)), vec![]))
+            });
+
+        let activation_control = Control::new("some control", Key::Esc);
+        mock_transition
+            .expect_get_activation_control()
+            .return_const(activation_control.clone());
+
+        let variable_injector = VariableInjector::new("some pattern".to_string());
+        let testee = WorkflowState::new("some state", variable_injector, vec![mock_transition]);
+        let target_state = testee.transition(&VariableSet::empty(), &activation_control.get_key());
+        assert!(target_state.is_ok());
+        assert_eq!(target_state.unwrap().get_name().as_str(), target_state_display_name);
+    }
+
 }

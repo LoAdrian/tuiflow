@@ -40,7 +40,7 @@ mock! {
     impl CommandRunner for CommandRunner {
         type Command=MockCommand;
         fn run_command<'a>(&self, command: &<MockCommandRunner as CommandRunner>::Command) -> Result<String, CommandRunnerError>;
-        fn new() -> Self; 
+        fn new() -> Self;
     }
 }
 
