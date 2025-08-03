@@ -15,8 +15,6 @@ impl Deref for ShCommand {
 
 impl From<String> for ShCommand {
     fn from(value: String) -> Self {
-        Self {
-            command: value,
-        }
+        Self { command: value }
     }
 }

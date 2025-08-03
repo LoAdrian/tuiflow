@@ -1,6 +1,6 @@
+use crossterm::event::{KeyCode, KeyEvent};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use crossterm::event::{KeyCode, KeyEvent};
 use tuiflow_model_contracts::control::Key;
 
 pub fn key_event_to_key(event: &KeyEvent) -> Result<Key, KeyEventToKeyMappingError> {

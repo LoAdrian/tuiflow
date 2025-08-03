@@ -2,7 +2,11 @@ use crate::body::{BodyState, BodyViewModel, BodyWidget};
 use crate::controls_widget::{ControlsViewModel, ControlsWidget, WIDGET_PADDING_VERTICAL};
 use crate::io::InputUpdatedViewModel;
 use crate::title_bar_widget::{TitleBarViewModel, TitleBarWidget};
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, widgets::{StatefulWidgetRef, WidgetRef}};
+use ratatui::{
+    buffer::Buffer,
+    layout::{Constraint, Layout, Rect},
+    widgets::{StatefulWidgetRef, WidgetRef},
+};
 use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model::Control;
@@ -32,8 +36,8 @@ impl<'a> MainWidget<'a> {
 impl<'a> StatefulWidgetRef for MainWidget<'a> {
     type State = MainState;
     fn render_ref(&self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
-        let legend_row_count =
-            (self.legend_footer.get_legend_size() as f32 / 3.0).ceil() as u16 + WIDGET_PADDING_VERTICAL;
+        let legend_row_count = (self.legend_footer.get_legend_size() as f32 / 3.0).ceil() as u16
+            + WIDGET_PADDING_VERTICAL;
         let layout = Layout::vertical([
             Constraint::Length(4),
             Constraint::Min(0),
@@ -44,7 +48,6 @@ impl<'a> StatefulWidgetRef for MainWidget<'a> {
         self.body.render_ref(body, buf, &mut state.body_state);
         self.legend_footer.render_ref(legend, buf)
     }
-    
 }
 
 pub struct MainViewModel {
@@ -54,7 +57,11 @@ pub struct MainViewModel {
 }
 
 impl MainViewModel {
-    pub fn new<T: Transit>(workflow: &Workflow<T>, selection_up: Control, selection_down: Control) -> Self {
+    pub fn new<T: Transit>(
+        workflow: &Workflow<T>,
+        selection_up: Control,
+        selection_down: Control,
+    ) -> Self {
         let display = workflow.get_display();
         let select_up_key = selection_up.get_key();
         let select_down_key = selection_down.get_key();
@@ -69,18 +76,33 @@ impl MainViewModel {
 //TODO Make this all more condiitional: e.g. only recreate part x when part x actually changes
 impl InputUpdatedViewModel for MainViewModel {
     type ViewState = MainState;
-    fn needs_update(&self, state: &Self::ViewState, workflow: &impl TerminalFlow, key: &Key) -> bool {
-        workflow.get_state_controls().iter().any(|control| control.get_key() == *key) 
-        || self.body_view_model.needs_update(&state.body_state, workflow, key)
-        || self.legend_view_model.needs_update(&(), workflow, key)
-        || self.title_bar_view_model.needs_update(&(), workflow, key)
+    fn needs_update(
+        &self,
+        state: &Self::ViewState,
+        workflow: &impl TerminalFlow,
+        key: &Key,
+    ) -> bool {
+        workflow
+            .get_state_controls()
+            .iter()
+            .any(|control| control.get_key() == *key)
+            || self
+                .body_view_model
+                .needs_update(&state.body_state, workflow, key)
+            || self.legend_view_model.needs_update(&(), workflow, key)
+            || self.title_bar_view_model.needs_update(&(), workflow, key)
     }
 
     fn update(&mut self, state: &mut Self::ViewState, workflow: &mut impl TerminalFlow, key: &Key) {
-        if workflow.get_state_controls().iter().any(|control| control.get_key() == *key) {
+        if workflow
+            .get_state_controls()
+            .iter()
+            .any(|control| control.get_key() == *key)
+        {
             _ = workflow.run_control(state.body_state.get_selected_line_index(), key);
         }
-        self.body_view_model.update(&mut state.body_state, workflow, key);
+        self.body_view_model
+            .update(&mut state.body_state, workflow, key);
         self.legend_view_model.update(&mut (), workflow, key);
         self.title_bar_view_model.update(&mut (), workflow, key);
     }
@@ -93,8 +115,6 @@ pub struct MainState {
 impl MainState {
     pub fn new() -> Self {
         let body_state = BodyState::new();
-        Self {
-            body_state,
-        }
+        Self { body_state }
     }
 }

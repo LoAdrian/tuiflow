@@ -1,5 +1,10 @@
 use crate::io::InputUpdatedViewModel;
-use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::{Color, Style, Stylize}, widgets::{Paragraph, WidgetRef}};
+use ratatui::{
+    buffer::Buffer,
+    layout::{Constraint, Layout, Rect},
+    style::{Color, Style, Stylize},
+    widgets::{Paragraph, WidgetRef},
+};
 use tuiflow_model::state::Transit;
 use tuiflow_model::workflow::Workflow;
 use tuiflow_model_contracts::control::Key;
@@ -11,8 +16,7 @@ pub struct TitleBarWidget<'a> {
     state_title: Paragraph<'a>,
     logo: Paragraph<'a>,
 }
-const LOGO_STR: &str = 
-" _____  __  __  __  ____  __     ______  __    __
+const LOGO_STR: &str = " _____  __  __  __  ____  __     ______  __    __
 /_  _/ / / / / / / / __/ / /    / __  / / /_  / /
  / /  / /_/ / / / / __/ / /__  / /_/ / / // |/ / 
 /_/  /_____/ /_/ /_/   /____/ /_____/ /___/|__/  ";
@@ -20,31 +24,23 @@ const LOGO_STR: &str =
 impl<'a> TitleBarWidget<'a> {
     pub fn new(view_model: &'a TitleBarViewModel) -> Self {
         let logo = Paragraph::new(LOGO_STR)
-            .style(Style::default()
-                .fg(Color::Cyan))
+            .style(Style::default().fg(Color::Cyan))
             .alignment(ratatui::layout::Alignment::Right);
 
-        Self { 
-            app_title: Paragraph::new(view_model.app_title.as_str())
-                .bold(),
+        Self {
+            app_title: Paragraph::new(view_model.app_title.as_str()).bold(),
             state_title: Paragraph::new(view_model.state_title.as_str()),
-            logo
+            logo,
         }
     }
 }
 
 impl<'a> WidgetRef for TitleBarWidget<'a> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
+        let horizontal_layout =
+            Layout::horizontal([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)]);
 
-        let horizontal_layout = Layout::horizontal([
-            Constraint::Ratio(1, 2),
-            Constraint::Ratio(1, 2),
-        ]);
-
-        let vertical_layout = Layout::vertical([
-            Constraint::Ratio(1, 2),
-            Constraint::Ratio(1, 2),
-        ]);
+        let vertical_layout = Layout::vertical([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)]);
         let [app_area, logo_area] = horizontal_layout.areas(area);
 
         let [app_title_area, state_title_area] = vertical_layout.areas(app_area);
@@ -52,7 +48,6 @@ impl<'a> WidgetRef for TitleBarWidget<'a> {
         self.app_title.render_ref(app_title_area, buf);
         self.state_title.render_ref(state_title_area, buf);
         self.logo.render_ref(logo_area, buf);
-
     }
 }
 
@@ -61,20 +56,19 @@ pub struct TitleBarViewModel {
     state_title: String,
 }
 
-impl <'a> TitleBarViewModel {
+impl<'a> TitleBarViewModel {
     pub fn new<T: Transit>(workflow: &Workflow<T>) -> Self {
         Self {
             app_title: workflow.get_app_title().to_string(),
             state_title: workflow.get_state_title().to_string(),
         }
     }
-    
 }
 
 impl InputUpdatedViewModel for TitleBarViewModel {
     type ViewState = ();
 
-    fn needs_update(&self, _: &Self::ViewState, _: & impl TerminalFlow, _: &Key) -> bool {
+    fn needs_update(&self, _: &Self::ViewState, _: &impl TerminalFlow, _: &Key) -> bool {
         false
     }
 

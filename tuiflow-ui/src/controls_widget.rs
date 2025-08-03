@@ -90,35 +90,31 @@ impl ControlsViewModel {
         entries.push(KeyControlViewModel::new(selection_up.clone()));
         entries.push(KeyControlViewModel::new(selection_down.clone()));
 
-        Self { entries, selection_up, selection_down}
+        Self {
+            entries,
+            selection_up,
+            selection_down,
+        }
     }
 }
 
 impl InputUpdatedViewModel for ControlsViewModel {
     type ViewState = ();
 
-    fn needs_update(
-        &self,
-        _: &Self::ViewState,
-        _: &impl TerminalFlow,
-        _: &Key,
-    ) -> bool {
+    fn needs_update(&self, _: &Self::ViewState, _: &impl TerminalFlow, _: &Key) -> bool {
         false
     }
 
-    fn update(
-        &mut self,
-        _: &mut Self::ViewState,
-        workflow: &mut impl TerminalFlow,
-        _: &Key,
-    ) {
+    fn update(&mut self, _: &mut Self::ViewState, workflow: &mut impl TerminalFlow, _: &Key) {
         self.entries = workflow
             .get_state_controls()
             .into_iter()
             .map(|control| KeyControlViewModel::new(control))
             .collect();
 
-        self.entries.push(KeyControlViewModel::new(self.selection_up.clone()));
-        self.entries.push(KeyControlViewModel::new(self.selection_down.clone()));
+        self.entries
+            .push(KeyControlViewModel::new(self.selection_up.clone()));
+        self.entries
+            .push(KeyControlViewModel::new(self.selection_down.clone()));
     }
 }

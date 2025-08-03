@@ -1,8 +1,7 @@
-use std::fmt::Display;
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
-#[derive(PartialEq, Debug, Clone)]
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct Control {
     name: String,
     key: Key,
@@ -31,8 +30,7 @@ impl Display for Control {
     }
 }
 
-#[derive(Hash, Debug, PartialEq, Eq, Clone, Copy)]
-#[derive(Serialize, Deserialize)]
+#[derive(Hash, Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum Key {
     Char(char),
     Enter,
@@ -74,5 +72,3 @@ impl Display for Key {
         }
     }
 }
-
-

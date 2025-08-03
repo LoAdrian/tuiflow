@@ -12,11 +12,11 @@ pub trait VariableExtractor: Clone {
 
 mock! {
     pub VariableExtractor{}
-    
+
     impl Clone for VariableExtractor {
         fn clone(&self) -> Self;
     }
-    
+
     impl VariableExtractor for VariableExtractor {
         fn extract(&self, input: &str) -> Vec<VariableSet>;
     }

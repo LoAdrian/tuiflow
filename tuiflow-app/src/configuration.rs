@@ -1,7 +1,7 @@
-use tuiflow_model_contracts::control::Key;
-use tuiflow_model::Control;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use tuiflow_model::Control;
+use tuiflow_model_contracts::control::Key;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct AppConfiguration {

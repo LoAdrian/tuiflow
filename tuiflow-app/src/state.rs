@@ -12,7 +12,7 @@ impl AppState {
 
     pub fn is_running(&self) -> bool {
         match self {
-            Self::Running{quit_control: _} => true,
+            Self::Running { quit_control: _ } => true,
             Self::Quitting => false,
         }
     }

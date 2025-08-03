@@ -37,19 +37,14 @@ impl<T: Transit> State<T> {
             })
             .unwrap_or(&empty_set);
 
-        self.workflow_state
-            .borrow()
-            .transition(variable_set, key)
+        self.workflow_state.borrow().transition(variable_set, key)
     }
 
     pub fn get_controls(&self) -> Vec<Control> {
         self.workflow_state.borrow().get_controls()
     }
 
-    pub fn new(
-        workflow_state: Rc<RefCell<WorkflowState<T>>>,
-        arguments: Vec<VariableSet>,
-    ) -> Self {
+    pub fn new(workflow_state: Rc<RefCell<WorkflowState<T>>>, arguments: Vec<VariableSet>) -> Self {
         let display = workflow_state.borrow().get_display(&arguments);
         Self {
             workflow_state,

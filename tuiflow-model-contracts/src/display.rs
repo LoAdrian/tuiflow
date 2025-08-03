@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, PartialEq)]
-pub struct Display { // Make this iterable
+pub struct Display {
+    // Make this iterable
     pub lines: Vec<Line>,
 }
 

@@ -3,9 +3,7 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 
-pub trait CommandRunner: Clone
-where
-{
+pub trait CommandRunner: Clone {
     type Command: Deref<Target = str> + From<String>;
     fn run_command(&self, command: &Self::Command) -> Result<String, CommandRunnerError>;
     fn new() -> Self;

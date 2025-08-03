@@ -12,7 +12,7 @@ impl VariableInjector {
         Self { output_pattern }
     }
 
-    pub(crate) fn inject(&self, variables: &VariableSet) -> String {
+    pub(crate) fn inject(&self, variables: &VariableSet) -> Option<String> {
         let mut result = self.output_pattern.clone();
         variables.iter().for_each(|var| {
             result = result.replace(
@@ -20,11 +20,12 @@ impl VariableInjector {
                 var.value.as_str(),
             )
         });
-        result = Regex::new("<.*>") // TODO: Replace with something more efficient
-            .unwrap()
-            .replace_all(result.as_str(), "")
-            .to_string();
-        result
+        let leftover_variable_matcher = Regex::new("<.*>") // TODO: Replace with something more efficient
+            .unwrap();
+        if leftover_variable_matcher.captures(&result).iter().count() > 0 {
+            return None;
+        }
+        Some(result)
     }
 }
 
@@ -43,22 +44,22 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert_eq!(result, "")
+        assert_eq!(result, Some("".to_string()))
     }
 
     #[test]
-    fn inject_on_simple_pattern_with_empty_set_returns_empty_string() {
+    fn inject_on_simple_pattern_with_empty_set_returns_none() {
         let testee = VariableInjector::new("<x>/<y>".to_string());
 
         let variables = VariableSet::empty();
 
         let result = testee.inject(&variables);
 
-        assert_eq!(result, "")
+        assert_eq!(result, None)
     }
 
     #[test]
-    fn inject_on_simple_pattern_with_partial_variable_set_returns_partial_string() {
+    fn inject_on_simple_pattern_with_partial_variable_set_returns_none() {
         let testee = VariableInjector::new("<x>/<y>".to_string());
 
         let variables = vec![Variable::new("x".into(), "hello".to_string())]
@@ -67,7 +68,7 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert_eq!(result, "hello/")
+        assert_eq!(result, None)
     }
 
     #[test]
@@ -83,6 +84,6 @@ mod test {
 
         let result = testee.inject(&variables);
 
-        assert_eq!(result, "hello/world")
+        assert_eq!(result, Some("hello/world".to_string()))
     }
 }

@@ -11,25 +11,32 @@ use tuiflow_model_contracts::command_runner::CommandRunner;
 use tuiflow_model_contracts::control::Key;
 
 pub trait ConstructWorkflow<T: Transit> {
-    fn build_from_configuration(
-        app_config: AppConfiguration
-    ) -> eyre::Result<Workflow<T>>;
+    fn build_from_configuration(app_config: AppConfiguration) -> eyre::Result<Workflow<T>>;
 }
 
 pub struct WorkflowFactory<R: CommandRunner> {
     _phantom: std::marker::PhantomData<R>,
 }
 
-impl<R: CommandRunner> ConstructWorkflow<transition::Transition<R, RegexVariableExtractor>> for WorkflowFactory<R> {
-    fn build_from_configuration (
+impl<R: CommandRunner> ConstructWorkflow<transition::Transition<R, RegexVariableExtractor>>
+    for WorkflowFactory<R>
+{
+    fn build_from_configuration(
         app_config: AppConfiguration,
     ) -> eyre::Result<Workflow<transition::Transition<R, RegexVariableExtractor>>> {
-        let states: HashMap<String, Rc<RefCell<WorkflowState<transition::Transition<R, RegexVariableExtractor>>>>> =
-            app_config
-                .states
-                .iter()
-                .map(|(name, config)| (name.clone(), Self::build_state(config.line_display_pattern.as_str(), name)))
-                .collect();
+        let states: HashMap<
+            String,
+            Rc<RefCell<WorkflowState<transition::Transition<R, RegexVariableExtractor>>>>,
+        > = app_config
+            .states
+            .iter()
+            .map(|(name, config)| {
+                (
+                    name.clone(),
+                    Self::build_state(config.line_display_pattern.as_str(), name),
+                )
+            })
+            .collect();
 
         for (name, state) in states.iter() {
             let state_config = app_config.states.get(name).unwrap(); //safe unwrap
@@ -43,8 +50,9 @@ impl<R: CommandRunner> ConstructWorkflow<transition::Transition<R, RegexVariable
                         transition_config.control_name
                     ))?;
 
-                let variable_extractor =
-                    RegexVariableExtractor::new(transition_config.cli_output_variable_set_extractor.as_str())?;
+                let variable_extractor = RegexVariableExtractor::new(
+                    transition_config.cli_output_variable_set_extractor.as_str(),
+                )?;
                 let transition = transition::Transition::new(
                     transition_control.clone(),
                     states
@@ -77,7 +85,11 @@ impl<R: CommandRunner> ConstructWorkflow<transition::Transition<R, RegexVariable
             initial_state.clone(),
             VariableInjector::new(app_config.initial_command.clone()),
             R::new(),
-            RegexVariableExtractor::new(app_config.initial_cli_output_variable_set_extractor.as_str())?,
+            RegexVariableExtractor::new(
+                app_config
+                    .initial_cli_output_variable_set_extractor
+                    .as_str(),
+            )?,
         );
         let initializer_state = WorkflowState::new(
             "INIT",
@@ -87,7 +99,6 @@ impl<R: CommandRunner> ConstructWorkflow<transition::Transition<R, RegexVariable
         let workflow = Workflow::new(initializer_state, app_config.app_title)?;
         Ok(workflow)
     }
-
 }
 
 impl<R: CommandRunner> WorkflowFactory<R> {
@@ -96,7 +107,11 @@ impl<R: CommandRunner> WorkflowFactory<R> {
         name: &str,
     ) -> Rc<RefCell<WorkflowState<transition::Transition<R, RegexVariableExtractor>>>> {
         let variable_mapper = VariableInjector::new(line_display_pattern.to_string());
-        let state = WorkflowState::<transition::Transition<R, RegexVariableExtractor>>::new(name, variable_mapper, vec![]);
+        let state = WorkflowState::<transition::Transition<R, RegexVariableExtractor>>::new(
+            name,
+            variable_mapper,
+            vec![],
+        );
         Rc::new(RefCell::new(state))
     }
 }

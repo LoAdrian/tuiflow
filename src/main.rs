@@ -1,9 +1,9 @@
 use eyre::OptionExt;
 use std::env;
 use std::fs::File;
-use tuiflow_app::App;
 use tuiflow_app::configuration::AppConfiguration;
 use tuiflow_app::factory::WorkflowFactory;
+use tuiflow_app::App;
 use tuiflow_model::transition::Transition;
 use tuiflow_model::variable_mapping::RegexVariableExtractor;
 use tuiflow_sh::sh_command_runner::ShCommandRunner;
