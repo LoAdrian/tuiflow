@@ -18,20 +18,28 @@ controls:
       key: !Char 'l'
 initial_command: ls -d -1 --file-type "$PWD/"*
 initial_state: show_files
-initial_cli_output_variable_set_extractor: ((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
+initial_cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
 states:
   show_files:
-    line_display_pattern: <subfolder>/<file>
+    line_display_pattern: <target>
     transitions:
       - control_name: moveinto
-        cli_output_variable_set_extractor: ((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
-        command_pattern: ls -d -1 "<base>/<wd>/<subdir>/"*
+        cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
+        command_pattern: ls -d -1 --file-type "<base>/<wd>/<subdir>/"*
         next_state: show_files
       - control_name: moveinto
-        cli_output_variable_set_extractor: ((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
-        command_pattern: ls -d -1 "<path>/<wd>/"*
+        cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
+        command_pattern: ls -d -1 --file-type "<base>/<wd>/"*
+        next_state: show_files
+      - control_name: moveinto
+        cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
+        command_pattern: ls -d -1 --file-type "<root><subdir>"*
         next_state: show_files
       - control_name: moveback
-        cli_output_variable_set_extractor: ((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
-        command_pattern: ls -d -1 "<path>/"*
+        cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
+        command_pattern: ls -d -1 --file-type "<base>/"*
+        next_state: show_files
+      - control_name: moveback
+        cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
+        command_pattern: ls -d -1 --file-type "<root>"*
         next_state: show_files
