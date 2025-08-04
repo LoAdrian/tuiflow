@@ -16,18 +16,22 @@ controls:
     moveinto:
       name: move into
       key: !Char 'l'
-initial_command: ls -d -1 "$PWD/"*
+initial_command: ls -d -1 --file-type "$PWD/"*
 initial_state: show_files
-initial_cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
+initial_cli_output_variable_set_extractor: /((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+))
 states:
   show_files:
     line_display_pattern: <subfolder>/<file>
     transitions:
       - control_name: moveinto
-        cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
-        command_pattern: ls -d -1 "<path>/<wd>/<subfolder>/"*
+        cli_output_variable_set_extractor: /((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+))
+        command_pattern: ls -d -1 "<base>/<wd>/<subdir>/"*
+        next_state: show_files
+      - control_name: moveinto
+        cli_output_variable_set_extractor: /((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+))
+        command_pattern: ls -d -1 "<path>/<wd>/"*
         next_state: show_files
       - control_name: moveback
-        cli_output_variable_set_extractor: (?<path>.+)\/(?<wd>.+)\/(?<subfolder>.+)
+        cli_output_variable_set_extractor: /((?<base>\/[^\r\n]*){0,1}(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+))
         command_pattern: ls -d -1 "<path>/"*
         next_state: show_files
