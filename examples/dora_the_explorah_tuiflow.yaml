@@ -25,11 +25,11 @@ states:
     transitions:
       - control_name: moveinto
         cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
-        command_pattern: ls -d -1 --file-type "<base>/<wd>/<subdir>/"*
+        command_pattern: ls -d -1 --file-type "<base><wd>/<subdir>"*
         next_state: show_files
       - control_name: moveinto
         cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
-        command_pattern: ls -d -1 --file-type "<base>/<wd>/"*
+        command_pattern: ls -d -1 --file-type "<base><wd>/"*
         next_state: show_files
       - control_name: moveinto
         cli_output_variable_set_extractor: ((?<base>[^\r\n]*)(?<wd>\/[^\/\n\r]*)\/|(?<root>\/))(?<target>((?<subdir>[^\/\n\r]+\/)|(?<file>[^\/\n\r]+)))
