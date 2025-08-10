@@ -1,4 +1,5 @@
 app_title: dora the explorah
+config_version: 0.1.0
 controls:
   selection_up:
     name: selection up

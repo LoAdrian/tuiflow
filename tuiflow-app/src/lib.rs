@@ -1,4 +1,3 @@
-use crate::configuration::AppConfiguration;
 use crate::factory::ConstructWorkflow;
 use crate::state::AppState;
 use crossterm::event;
@@ -13,6 +12,7 @@ use tuiflow_model_contracts::control::Key;
 use tuiflow_ui::io;
 use tuiflow_ui::io::InputUpdatedViewModel;
 use tuiflow_ui::main_widget::{MainState, MainViewModel, MainWidget};
+use crate::configuration::v0_1_0::app_configuration::AppConfiguration;
 
 pub mod configuration;
 pub mod factory;

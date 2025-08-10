@@ -6,7 +6,9 @@ use crate::{Control, Display};
 use std::collections::HashMap;
 use tuiflow_model_contracts::control::Key;
 use tuiflow_model_contracts::error::StateTransitionError;
-use tuiflow_model_contracts::error::StateTransitionError::{ControlNotFound, NoMatchingTransitionCommandPattern};
+use tuiflow_model_contracts::error::StateTransitionError::{
+    ControlNotFound, NoMatchingTransitionCommandPattern,
+};
 
 #[derive(Clone)]
 pub struct WorkflowState<T: Transit> {
@@ -22,7 +24,7 @@ impl<T: Transit> WorkflowState<T> {
         transitions: Vec<T>,
     ) -> Self {
         let transition_mapping: HashMap<Key, Vec<T>> = HashMap::new();
-        
+
         let mut _self = Self {
             display_name: String::from(display_name),
             command_output_to_display: display_variable_injector,
@@ -32,7 +34,7 @@ impl<T: Transit> WorkflowState<T> {
             let key = transition.get_activation_control().get_key();
             _self.add_transition(key, transition);
         }
-        
+
         _self
     }
 
@@ -65,11 +67,13 @@ impl<T: Transit> WorkflowState<T> {
     pub(crate) fn get_controls(&self) -> Vec<Control> {
         self.transitions
             .iter()
-            .map(|(_, transition)| transition
-                .first()
-                .expect("Key was added to list of transitions without any transition.")
-                .get_activation_control()
-                .clone())
+            .map(|(_, transition)| {
+                transition
+                    .first()
+                    .expect("Key was added to list of transitions without any transition.")
+                    .get_activation_control()
+                    .clone()
+            })
             .collect()
     }
 
@@ -130,11 +134,7 @@ mod tests {
             activation_control.clone(),
         );
         let second_transition =
-            get_mock_transition(
-                "second state", 
-                "<y>/<x>",
-                true,
-                activation_control.clone());
+            get_mock_transition("second state", "<y>/<x>", true, activation_control.clone());
 
         let variable_injector = VariableInjector::new("some pattern".to_string());
         let testee = WorkflowState::new(
@@ -167,12 +167,12 @@ mod tests {
             false,
             activation_control.clone(),
         );
-        let second_transition =
-            get_mock_transition(
-                target_state_display_name,
-                "<y>/<x>",
-                true,
-                activation_control.clone());
+        let second_transition = get_mock_transition(
+            target_state_display_name,
+            "<y>/<x>",
+            true,
+            activation_control.clone(),
+        );
 
         let variable_injector = VariableInjector::new("some pattern".to_string());
         let testee = WorkflowState::new(
@@ -184,8 +184,8 @@ mod tests {
             Variable::new("x".into(), "hello".to_string()),
             Variable::new("y".into(), "world".to_string()),
         ]
-            .into_iter()
-            .collect();
+        .into_iter()
+        .collect();
         let target_state = testee.transition(&variable_set, &activation_control.get_key());
         assert!(target_state.is_ok());
         assert_eq!(
@@ -204,12 +204,12 @@ mod tests {
             false,
             activation_control.clone(),
         );
-        let second_transition =
-            get_mock_transition(
-                "second state",
-                "<y>/<x>/<z>",
-                false,
-                activation_control.clone());
+        let second_transition = get_mock_transition(
+            "second state",
+            "<y>/<x>/<z>",
+            false,
+            activation_control.clone(),
+        );
 
         let variable_injector = VariableInjector::new("some pattern".to_string());
         let testee = WorkflowState::new(
@@ -221,12 +221,13 @@ mod tests {
             Variable::new("x".into(), "hello".to_string()),
             Variable::new("y".into(), "world".to_string()),
         ]
-            .into_iter()
-            .collect();
+        .into_iter()
+        .collect();
         let target_state = testee.transition(&variable_set, &activation_control.get_key());
         assert!(target_state.is_err());
         assert_eq!(
-            target_state.err().unwrap(), StateTransitionError::NoMatchingTransitionCommandPattern
+            target_state.err().unwrap(),
+            StateTransitionError::NoMatchingTransitionCommandPattern
         );
     }
 
@@ -248,7 +249,11 @@ mod tests {
                     variable_injector.clone(),
                     vec![],
                 );
-                if matches_input { Some(Ok(State::new(Rc::new(RefCell::new(target_state)), vec![]))) } else { None }
+                if matches_input {
+                    Some(Ok(State::new(Rc::new(RefCell::new(target_state)), vec![])))
+                } else {
+                    None
+                }
             });
 
         transition
